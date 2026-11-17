@@ -1,0 +1,2388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PhishShield AI - Dashboard</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Segoe UI',sans-serif;background:#f0f2fa;min-height:100vh;display:flex;flex-direction:column;position:relative;overflow-x:hidden}
+    .bg-circuit{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0.13}
+    .topbar{position:relative;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:10px 18px;background:rgba(255,255,255,0.95);border-bottom:0.5px solid #e0e2ef;backdrop-filter:blur(8px)}
+    .brand{display:flex;align-items:center;gap:9px}
+    .logo{width:32px;height:32px;background:#534AB7;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px}
+    .bname{font-size:15px;font-weight:600;color:#26215C}
+    .bsub{font-size:10px;color:#7F77DD}
+    .tr{display:flex;align-items:center;gap:8px}
+    .live{display:flex;align-items:center;gap:4px;padding:3px 10px;background:#EAF3DE;border-radius:20px;font-size:11px;color:#3B6D11;font-weight:500;border:0.5px solid #C0DD97}
+    .pulse{width:6px;height:6px;border-radius:50%;background:#639922;animation:beat 1.4s infinite}
+    @keyframes beat{0%,100%{transform:scale(1)}50%{transform:scale(1.6)}}
+    .ib{width:30px;height:30px;border-radius:8px;border:0.5px solid #e0e2ef;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#888;font-size:15px;transition:all .2s}
+    .ib:hover{background:#EEEDFE;color:#534AB7;border-color:#AFA9EC}
+    .av{width:30px;height:30px;border-radius:50%;background:#EEEDFE;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#3C3489}
+    .layout{display:flex;flex:1;position:relative;z-index:1}
+    .side{width:48px;background:rgba(255,255,255,0.92);border-right:0.5px solid #e0e2ef;display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:4px;min-height:calc(100vh - 52px)}
+    .sn{width:32px;height:32px;border-radius:8px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:17px;transition:all .2s}
+    .sn:hover,.sn.on{background:#EEEDFE;color:#534AB7}
+    .sdiv{width:22px;height:0.5px;background:#e0e2ef;margin:3px 0}
+    .main{flex:1;padding:14px;display:flex;flex-direction:column;gap:12px;overflow-y:auto}
+    .r4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    .r21{display:grid;grid-template-columns:2fr 1fr;gap:12px}
+    .r31{display:grid;grid-template-columns:3fr 2fr;gap:12px}
+    .mcard{background:rgba(255,255,255,0.95);border-radius:12px;padding:14px;border:0.5px solid #e0e2ef;transition:transform .2s,box-shadow .2s;border-top-width:2px}
+    .mcard:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(83,74,183,0.08)}
+    .mt{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
+    .mi{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px}
+    .md{font-size:10px;padding:2px 6px;border-radius:10px;font-weight:500}
+    .dup{background:#EAF3DE;color:#3B6D11}
+    .ddn{background:#FCEBEB;color:#A32D2D}
+    .mv{font-size:22px;font-weight:600;color:#26215C}
+    .ml{font-size:11px;color:#888;margin-top:2px}
+    .sp{display:flex;align-items:flex-end;gap:2px;height:20px;margin-top:8px}
+    .sb{flex:1;border-radius:2px;background:#e0e2ef;transition:height .6s ease}
+    .card{background:rgba(255,255,255,0.95);border:0.5px solid #e0e2ef;border-radius:12px;padding:14px;box-shadow:0 2px 12px rgba(83,74,183,0.04)}
+    .ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    .ct{font-size:13px;font-weight:600;color:#26215C;display:flex;align-items:center;gap:6px}
+    .ca{font-size:11px;color:#534AB7;background:none;border:none;cursor:pointer;font-family:'Segoe UI',sans-serif}
+    .stabs{display:flex;gap:5px;margin-bottom:10px}
+    .stab{padding:5px 11px;border-radius:7px;font-size:11px;font-weight:500;cursor:pointer;border:0.5px solid #e0e2ef;background:transparent;color:#888;transition:all .2s;display:flex;align-items:center;gap:4px;font-family:'Segoe UI',sans-serif}
+    .stab.on,.stab:hover{background:#EEEDFE;border-color:#AFA9EC;color:#3C3489}
+    .inp{width:100%;padding:8px 10px;font-size:12px;border:0.5px solid #e0e2ef;border-radius:8px;background:#f8f9ff;color:#26215C;outline:none;transition:border .2s;font-family:'Segoe UI',sans-serif;margin-bottom:7px}
+    .inp:focus{border-color:#534AB7;background:#fff}
+    textarea.inp{resize:none;height:55px}
+    .sbtn{width:100%;padding:9px;background:#534AB7;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'Segoe UI',sans-serif}
+    .sbtn:hover{background:#3C3489;transform:translateY(-1px)}
+    .sbtn.run{background:#AFA9EC;cursor:not-allowed;transform:none}
+    .pb{height:3px;background:#e0e2ef;border-radius:2px;margin-top:8px;overflow:hidden;display:none}
+    .pf{height:100%;width:0%;background:linear-gradient(90deg,#534AB7,#AFA9EC);border-radius:2px;transition:width .08s}
+    .res{display:none;margin-top:10px;animation:ri .3s ease}
+    @keyframes ri{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+    .rtag{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:600;margin-bottom:7px}
+    .rh{background:#FCEBEB;color:#A32D2D;border:0.5px solid #F09595}
+    .rm{background:#FAEEDA;color:#854F0B;border:0.5px solid #FAC775}
+    .rl{background:#EAF3DE;color:#3B6D11;border:0.5px solid #C0DD97}
+    .rf{display:flex;align-items:center;gap:6px;font-size:11px;color:#555;padding:4px 0;border-bottom:0.5px solid #f0f0f8}
+    .rf:last-child{border:none}
+    .rbw{flex:1;height:4px;background:#f0f0f8;border-radius:2px;overflow:hidden}
+    .rb{height:100%;border-radius:2px;width:0%;transition:width 1s ease}
+    .fi{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:0.5px solid #f0f0f8;cursor:pointer;transition:padding .2s}
+    .fi:last-child{border:none}
+    .fi:hover{padding-left:4px}
+    .fic{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+    .fh{background:#FCEBEB;color:#A32D2D}
+    .fm{background:#FAEEDA;color:#854F0B}
+    .fl{background:#EAF3DE;color:#3B6D11}
+    .ft{flex:1;min-width:0}
+    .fu{font-size:11px;font-weight:500;color:#26215C;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .fw{font-size:10px;color:#aaa;margin-top:1px}
+    .ftag{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500;flex-shrink:0}
+    .fth{background:#FCEBEB;color:#A32D2D}
+    .ftm{background:#FAEEDA;color:#854F0B}
+    .ftl{background:#EAF3DE;color:#3B6D11}
+    .mr{display:flex;align-items:center;gap:7px;padding:6px 0;border-bottom:0.5px solid #f0f0f8;font-size:11px}
+    .mr:last-child{border:none}
+    .mn{color:#555;width:95px;flex-shrink:0}
+    .mbw{flex:1;height:5px;background:#f0f0f8;border-radius:3px;overflow:hidden}
+    .mb{height:100%;border-radius:3px;width:0%;transition:width 1.3s ease}
+    .mp{color:#26215C;font-weight:600;width:30px;text-align:right;font-size:11px}
+    .hg{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:7px}
+    .hc{aspect-ratio:1;border-radius:3px;background:#e8eaf6;transition:background .3s}
+    .today{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+    .tcard{background:#f8f9ff;border-radius:9px;padding:10px;text-align:center;border:0.5px solid #e0e2ef}
+    .tv{font-size:20px;font-weight:600}
+    .tl{font-size:10px;color:#aaa;margin-top:2px}
+    .slbl{font-size:10px;color:#aaa;margin-bottom:7px;display:flex;justify-content:space-between}
+    .logout-link{text-decoration:none}
+    .logout-btn{padding:5px 11px;border:0.5px solid #e0e2ef;border-radius:7px;background:#fff;color:#888;font-size:11px;cursor:pointer;font-family:'Segoe UI',sans-serif;transition:all .2s;display:flex;align-items:center;gap:4px}
+    .logout-btn:hover{background:#FCEBEB;color:#A32D2D;border-color:#F09595}
+    .dl-btn{width:30px;height:30px;border-radius:8px;border:0.5px solid #AFA9EC;background:#EEEDFE;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#534AB7;font-size:15px;transition:all .2s;text-decoration:none}
+    .dl-btn:hover{background:#534AB7;color:#fff}
+    .dark-toggle{width:30px;height:30px;border-radius:8px;border:0.5px solid #e0e2ef;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#888;font-size:15px;transition:all .2s}
+    .dark-toggle:hover{background:#EEEDFE;color:#534AB7}
+    .notif-wrap{position:relative}
+    .notif-badge{position:absolute;top:-4px;right:-4px;width:16px;height:16px;border-radius:50%;background:#E24B4A;color:#fff;font-size:9px;font-weight:600;display:none;align-items:center;justify-content:center;border:2px solid #fff}
+    .notif-badge.show{display:flex}
+    .notif-panel{position:absolute;top:38px;right:0;width:280px;background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(83,74,183,0.15);border:0.5px solid #e0e2ef;z-index:100;display:none;animation:slideDown .2s ease}
+    @keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+    .notif-panel.open{display:block}
+    .notif-head{padding:12px 14px;border-bottom:0.5px solid #e0e2ef;display:flex;align-items:center;justify-content:space-between}
+    .notif-title{font-size:12px;font-weight:600;color:#26215C}
+    .notif-clear{font-size:11px;color:#534AB7;background:none;border:none;cursor:pointer;font-family:'Segoe UI',sans-serif}
+    .notif-list{max-height:220px;overflow-y:auto}
+    .notif-item{display:flex;align-items:flex-start;gap:8px;padding:10px 14px;border-bottom:0.5px solid #f0f0f8;cursor:pointer;transition:background .2s}
+    .notif-item:hover{background:#f8f9ff}
+    .notif-item:last-child{border:none}
+    .notif-icon{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+    .ni-h{background:#FCEBEB;color:#A32D2D}
+    .ni-m{background:#FAEEDA;color:#854F0B}
+    .ni-l{background:#EAF3DE;color:#3B6D11}
+    .notif-text{flex:1}
+    .notif-msg{font-size:11px;color:#26215C;font-weight:500;line-height:1.4}
+    .notif-time{font-size:10px;color:#aaa;margin-top:2px}
+    .notif-empty{padding:20px;text-align:center;font-size:12px;color:#aaa}
+    .toast-wrap{position:fixed;top:60px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+    .toast{padding:10px 14px;border-radius:10px;font-size:12px;font-weight:500;display:flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(0,0,0,0.12);animation:toastIn .3s ease;min-width:220px;transition:opacity .3s,transform .3s}
+    @keyframes toastIn{from{opacity:0;transform:translateX(50px)}to{opacity:1;transform:translateX(0)}}
+    .toast-h{background:#FCEBEB;color:#A32D2D;border:0.5px solid #F09595}
+    .toast-m{background:#FAEEDA;color:#854F0B;border:0.5px solid #FAC775}
+    .toast-l{background:#EAF3DE;color:#3B6D11;border:0.5px solid #C0DD97}
+    .chat-bubble{position:fixed;bottom:24px;right:24px;width:46px;height:46px;border-radius:50%;background:#534AB7;color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 20px rgba(83,74,183,0.4);z-index:1000;transition:all .3s;animation:bob 2s ease-in-out infinite}
+    @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    .chat-bubble:hover{background:#3C3489;transform:scale(1.1);animation:none}
+    .chat-window{position:fixed;bottom:80px;right:24px;width:300px;height:400px;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(83,74,183,0.2);z-index:1000;display:none;flex-direction:column;border:0.5px solid #e0e2ef;overflow:hidden;animation:slideUp .3s ease}
+    @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    .chat-window.open{display:flex}
+    .chat-head{background:#534AB7;padding:12px 14px;display:flex;align-items:center;gap:8px}
+    .chat-head-icon{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px}
+    .chat-head-name{font-size:13px;font-weight:600;color:#fff}
+    .chat-head-status{font-size:10px;color:#CECBF6;display:flex;align-items:center;gap:4px}
+    .chat-head-dot{width:5px;height:5px;border-radius:50%;background:#97C459}
+    .chat-close{color:rgba(255,255,255,0.7);background:none;border:none;cursor:pointer;font-size:16px;margin-left:auto}
+    .chat-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:#f8f9ff}
+    .msg{max-width:85%;padding:8px 11px;border-radius:12px;font-size:12px;line-height:1.5;animation:msgIn .2s ease}
+    @keyframes msgIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+    .msg-bot{background:#fff;color:#26215C;border:0.5px solid #e0e2ef;border-radius:12px 12px 12px 2px;align-self:flex-start}
+    .msg-user{background:#534AB7;color:#fff;border-radius:12px 12px 2px 12px;align-self:flex-end}
+    .msg-typing{display:flex;align-items:center;gap:4px;padding:10px 12px;background:#fff;border:0.5px solid #e0e2ef;border-radius:12px 12px 12px 2px;align-self:flex-start}
+    .typing-dot{width:6px;height:6px;border-radius:50%;background:#AFA9EC;animation:typing 1s infinite}
+    .typing-dot:nth-child(2){animation-delay:.2s}
+    .typing-dot:nth-child(3){animation-delay:.4s}
+    @keyframes typing{0%,100%{transform:translateY(0);opacity:.5}50%{transform:translateY(-4px);opacity:1}}
+    .chat-input-wrap{padding:10px;background:#fff;border-top:0.5px solid #e0e2ef;display:flex;gap:6px}
+    .chat-inp{flex:1;padding:7px 10px;font-size:12px;border:0.5px solid #e0e2ef;border-radius:20px;background:#f8f9ff;color:#26215C;outline:none;font-family:'Segoe UI',sans-serif;transition:border .2s}
+    .chat-inp:focus{border-color:#534AB7}
+    .chat-send{width:30px;height:30px;border-radius:50%;background:#534AB7;color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .2s;flex-shrink:0}
+    .chat-send:hover{background:#3C3489}
+    .chat-suggestions{display:flex;flex-wrap:wrap;gap:5px;padding:0 12px 8px}
+    .sug{padding:4px 9px;border-radius:20px;font-size:10px;border:0.5px solid #AFA9EC;background:#EEEDFE;color:#3C3489;cursor:pointer;transition:all .2s;font-family:'Segoe UI',sans-serif}
+    .sug:hover{background:#534AB7;color:#fff;border-color:#534AB7}
+    body.dark{background:#0f0e17}
+    body.dark .topbar{background:rgba(26,26,46,0.95);border-color:#2d2d44}
+    body.dark .card{background:#1a1a2e;border-color:#2d2d44}
+    body.dark .mcard{background:#1a1a2e;border-color:#2d2d44}
+    body.dark .side{background:rgba(26,26,46,0.92);border-color:#2d2d44}
+    body.dark .bname{color:#CECBF6}
+    body.dark .mv{color:#CECBF6}
+    body.dark .ct{color:#CECBF6}
+    body.dark .fu{color:#CECBF6}
+    body.dark .inp{background:#0f0e17;border-color:#2d2d44;color:#fff}
+    body.dark .inp:focus{border-color:#534AB7;background:#1a1a2e}
+    body.dark .ib{background:#1a1a2e;border-color:#2d2d44;color:#888}
+    body.dark .logout-btn{background:#1a1a2e;border-color:#2d2d44;color:#888}
+    body.dark .tcard{background:#0f0e17;border-color:#2d2d44}
+    body.dark .av{background:#26215C;color:#CECBF6}
+    body.dark .stab{border-color:#2d2d44;color:#6b7280}
+    body.dark .stab.on{background:#26215C;border-color:#534AB7;color:#CECBF6}
+    body.dark .rf{border-color:#2d2d44}
+    body.dark .fi{border-color:#2d2d44}
+    body.dark .mr{border-color:#2d2d44}
+    body.dark .ml{color:#6b7280}
+    body.dark .fw{color:#4b5563}
+    body.dark .mn{color:#9ca3af}
+    body.dark .chat-window{background:#1a1a2e;border-color:#2d2d44}
+    body.dark .chat-messages{background:#0f0e17}
+    body.dark .msg-bot{background:#26215C;border-color:#2d2d44;color:#CECBF6}
+    body.dark .chat-input-wrap{background:#1a1a2e;border-color:#2d2d44}
+    body.dark .chat-inp{background:#0f0e17;border-color:#2d2d44;color:#fff}
+    body.dark .sug{background:#26215C;border-color:#534AB7;color:#CECBF6}
+    body.dark .notif-panel{background:#1a1a2e;border-color:#2d2d44}
+    body.dark .notif-item{border-color:#2d2d44}
+    body.dark .notif-item:hover{background:#26215C}
+    body.dark .notif-title{color:#CECBF6}
+    body.dark .notif-msg{color:#CECBF6}
+    body.dark .dl-btn{background:#26215C;border-color:#534AB7}
+    body.dark .dark-toggle{background:#1a1a2e;border-color:#2d2d44;color:#AFA9EC}
+    body.dark .sbtn{background:#534AB7}
+    body.dark .mp{color:#CECBF6}
+    *{transition:background .3s,color .2s,border-color .2s}
+    /* VOICE FEATURES */
+    .voice-btn{width:34px;height:34px;border-radius:50%;border:0.5px solid #e0e2ef;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#888;font-size:16px;transition:all .2s;flex-shrink:0}
+    .voice-btn:hover{background:#EEEDFE;color:#534AB7;border-color:#AFA9EC}
+    .voice-btn.listening{background:#FCEBEB;color:#A32D2D;border-color:#F09595;animation:voicePulse 1s infinite}
+    .voice-btn.speaking{background:#EAF3DE;color:#3B6D11;border-color:#C0DD97;animation:voicePulse 1s infinite}
+    @keyframes voicePulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(83,74,183,0.3)}50%{transform:scale(1.1);box-shadow:0 0 0 6px rgba(83,74,183,0)}}
+    .voice-panel{position:fixed;bottom:80px;left:24px;width:280px;background:#fff;border-radius:14px;box-shadow:0 8px 30px rgba(83,74,183,0.15);border:0.5px solid #e0e2ef;z-index:1000;display:none;animation:slideUp .3s ease}
+    .voice-panel.open{display:block}
+    .voice-head{background:#534AB7;padding:10px 14px;border-radius:14px 14px 0 0;display:flex;align-items:center;justify-content:space-between}
+    .voice-head-title{font-size:12px;font-weight:600;color:#fff;display:flex;align-items:center;gap:6px}
+    .voice-close{color:rgba(255,255,255,0.7);background:none;border:none;cursor:pointer;font-size:14px}
+    .voice-body{padding:12px}
+    .voice-status{background:#f8f9ff;border-radius:8px;padding:10px;margin-bottom:10px;border:0.5px solid #e0e2ef;min-height:50px;display:flex;align-items:center;gap:8px}
+    .voice-waves{display:flex;align-items:center;gap:3px;height:20px}
+    .wave-bar{width:3px;border-radius:2px;background:#534AB7;animation:wave 0.8s ease-in-out infinite}
+    .wave-bar:nth-child(2){animation-delay:.1s}
+    .wave-bar:nth-child(3){animation-delay:.2s}
+    .wave-bar:nth-child(4){animation-delay:.3s}
+    .wave-bar:nth-child(5){animation-delay:.4s}
+    @keyframes wave{0%,100%{height:4px}50%{height:16px}}
+    .voice-waves.idle .wave-bar{animation:none;height:4px}
+    .voice-text{font-size:11px;color:#26215C;flex:1}
+    .voice-btn-row{display:flex;gap:6px}
+    .vbtn{flex:1;padding:8px;border-radius:8px;border:none;font-size:11px;font-weight:500;cursor:pointer;font-family:'Segoe UI',sans-serif;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .2s}
+    .vbtn-primary{background:#534AB7;color:#fff}
+    .vbtn-primary:hover{background:#3C3489}
+    .vbtn-outline{background:#f8f9ff;color:#534AB7;border:0.5px solid #AFA9EC}
+    .vbtn-outline:hover{background:#EEEDFE}
+    .vbtn-danger{background:#FCEBEB;color:#A32D2D;border:0.5px solid #F09595}
+    .vbtn-danger:hover{background:#F7C1C1}
+    .voice-commands{margin-top:8px;font-size:10px;color:#aaa}
+    .voice-cmd{padding:3px 0;border-bottom:0.5px solid #f0f0f8;color:#555}
+    .voice-cmd:last-child{border:none}
+    .voice-cmd b{color:#534AB7}
+    .voice-fab{position:fixed;bottom:80px;left:24px;width:46px;height:46px;border-radius:50%;background:#1D9E75;color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 20px rgba(29,158,117,0.4);z-index:999;transition:all .3s;animation:bob 2s ease-in-out infinite}
+    .voice-fab:hover{background:#178a63;animation:none}
+    .speak-highlight{background:#FFF3CD;border-radius:3px;padding:0 2px}
+  </style>
+</head>
+<body>
+
+<svg class="bg-circuit" viewBox="0 0 1400 900" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#534AB7" stroke-width="0.5"/>
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#grid)"/>
+  <circle cx="100" cy="100" r="50" fill="none" stroke="#534AB7" stroke-width="1"/>
+  <circle cx="100" cy="100" r="30" fill="none" stroke="#534AB7" stroke-width="0.7"/>
+  <circle cx="100" cy="100" r="8" fill="#534AB7" opacity="0.5"/>
+  <line x1="100" y1="50" x2="100" y2="0" stroke="#534AB7" stroke-width="1"/>
+  <line x1="150" y1="100" x2="260" y2="100" stroke="#534AB7" stroke-width="1.2"/>
+  <line x1="260" y1="100" x2="320" y2="50" stroke="#534AB7" stroke-width="1"/>
+  <line x1="320" y1="50" x2="480" y2="50" stroke="#534AB7" stroke-width="1"/>
+  <circle cx="480" cy="50" r="6" fill="#534AB7" opacity="0.5"/>
+  <line x1="480" y1="50" x2="560" y2="100" stroke="#534AB7" stroke-width="1"/>
+  <line x1="560" y1="100" x2="700" y2="100" stroke="#534AB7" stroke-width="1.2"/>
+  <circle cx="700" cy="100" r="8" fill="none" stroke="#534AB7" stroke-width="1"/>
+  <circle cx="700" cy="100" r="3" fill="#534AB7" opacity="0.5"/>
+  <line x1="700" y1="108" x2="700" y2="200" stroke="#534AB7" stroke-width="0.8"/>
+  <line x1="700" y1="100" x2="860" y2="100" stroke="#534AB7" stroke-width="1.2"/>
+  <line x1="860" y1="100" x2="940" y2="40" stroke="#534AB7" stroke-width="1"/>
+  <line x1="940" y1="40" x2="1100" y2="40" stroke="#534AB7" stroke-width="1"/>
+  <circle cx="1100" cy="40" r="7" fill="none" stroke="#534AB7" stroke-width="1"/>
+  <line x1="1100" y1="40" x2="1200" y2="100" stroke="#534AB7" stroke-width="1"/>
+  <circle cx="1200" cy="100" r="10" fill="none" stroke="#534AB7" stroke-width="1.2"/>
+  <circle cx="1200" cy="100" r="4" fill="#534AB7" opacity="0.4"/>
+  <line x1="1200" y1="110" x2="1200" y2="240" stroke="#534AB7" stroke-width="0.8"/>
+  <line x1="100" y1="150" x2="100" y2="280" stroke="#534AB7" stroke-width="0.8"/>
+  <line x1="100" y1="280" x2="200" y2="360" stroke="#534AB7" stroke-width="0.8"/>
+  <circle cx="200" cy="360" r="5" fill="#534AB7" opacity="0.4"/>
+  <line x1="200" y1="360" x2="400" y2="360" stroke="#534AB7" stroke-width="0.8"/>
+  <line x1="700" y1="200" x2="580" y2="300" stroke="#534AB7" stroke-width="0.7"/>
+  <line x1="580" y1="300" x2="580" y2="480" stroke="#534AB7" stroke-width="0.7"/>
+  <circle cx="580" cy="480" r="5" fill="#534AB7" opacity="0.35"/>
+  <line x1="700" y1="200" x2="820" y2="300" stroke="#534AB7" stroke-width="0.7"/>
+  <line x1="820" y1="300" x2="980" y2="300" stroke="#534AB7" stroke-width="0.7"/>
+  <line x1="1200" y1="240" x2="1080" y2="340" stroke="#534AB7" stroke-width="0.8"/>
+  <circle cx="1080" cy="340" r="6" fill="none" stroke="#534AB7" stroke-width="0.8"/>
+  <line x1="1080" y1="340" x2="900" y2="340" stroke="#534AB7" stroke-width="0.7"/>
+  <rect x="280" y="140" width="80" height="40" rx="4" fill="#534AB7" opacity="0.07" stroke="#534AB7" stroke-width="0.8"/>
+  <rect x="800" y="180" width="100" height="50" rx="4" fill="#534AB7" opacity="0.07" stroke="#534AB7" stroke-width="0.8"/>
+  <circle cx="300" cy="600" r="80" fill="none" stroke="#534AB7" stroke-width="0.8" opacity="0.6"/>
+  <circle cx="300" cy="600" r="50" fill="none" stroke="#534AB7" stroke-width="0.6" opacity="0.5"/>
+  <circle cx="300" cy="600" r="25" fill="none" stroke="#534AB7" stroke-width="0.5" opacity="0.4"/>
+  <circle cx="1100" cy="650" r="100" fill="none" stroke="#534AB7" stroke-width="0.8" opacity="0.5"/>
+  <circle cx="1100" cy="650" r="65" fill="none" stroke="#534AB7" stroke-width="0.6" opacity="0.4"/>
+  <circle cx="1100" cy="650" r="30" fill="none" stroke="#534AB7" stroke-width="0.5" opacity="0.35"/>
+  <line x1="0" y1="750" x2="200" y2="750" stroke="#534AB7" stroke-width="0.8"/>
+  <line x1="200" y1="750" x2="300" y2="800" stroke="#534AB7" stroke-width="0.7"/>
+  <line x1="300" y1="800" x2="500" y2="800" stroke="#534AB7" stroke-width="0.7"/>
+  <line x1="500" y1="800" x2="600" y2="750" stroke="#534AB7" stroke-width="0.7"/>
+  <line x1="600" y1="750" x2="900" y2="750" stroke="#534AB7" stroke-width="0.8"/>
+  <circle cx="900" cy="750" r="6" fill="none" stroke="#534AB7" stroke-width="0.8"/>
+</svg>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="logo"><i class="ti ti-shield-check"></i></div>
+    <div>
+      <div class="bname">PhishShield AI</div>
+      <div class="bsub">AI-Driven Cyber Threat Detection</div>
+    </div>
+  </div>
+  <div class="tr">
+    <div class="live"><div class="pulse"></div>Live monitoring</div>
+    <button class="voice-btn" onclick="startVoiceCommand()" id="topbar-voice-btn" title="Voice Command">
+  <i class="ti ti-microphone"></i>
+</button>
+    <button class="dark-toggle" onclick="toggleDark()" id="dark-btn" title="Toggle Dark Mode">
+      <i class="ti ti-moon" id="dark-icon"></i>
+    </button>
+    <div class="notif-wrap">
+      <button class="ib" onclick="toggleNotif()" title="Notifications">
+        <i class="ti ti-bell"></i>
+      </button>
+      <div class="notif-badge" id="notif-badge">0</div>
+      <div class="notif-panel" id="notif-panel">
+        <div class="notif-head">
+          <span class="notif-title">Notifications</span>
+          <button class="notif-clear" onclick="clearNotifs()">Clear all</button>
+        </div>
+        <div class="notif-list" id="notif-list">
+          <div class="notif-empty" id="notif-empty">No notifications yet</div>
+        </div>
+      </div>
+    </div>
+    <button class="ib" title="Settings"><i class="ti ti-settings"></i></button>
+    <div class="av">{{ user[0].upper() if user else 'U' }}</div>
+    <a href="/download/report" class="dl-btn" title="Download PDF Report">
+      <i class="ti ti-download"></i>
+    </a>
+    <a href="/logout" class="logout-link">
+      <button class="logout-btn"><i class="ti ti-logout"></i>Logout</button>
+    </a>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="side">
+  <button class="sn on" onclick="showPage('dashboard')" title="Dashboard">
+    <i class="ti ti-layout-dashboard"></i>
+  </button>
+  <button class="sn" onclick="showPage('scan')" title="Scan">
+    <i class="ti ti-search"></i>
+  </button>
+  <button class="sn" onclick="showPage('history')" title="History">
+    <i class="ti ti-history"></i>
+  </button>
+  <div class="sdiv"></div>
+  <button class="sn" onclick="showPage('analytics')" title="Analytics">
+    <i class="ti ti-chart-bar"></i>
+  </button>
+  <button class="sn" onclick="showPage('reports')" title="Reports">
+    <i class="ti ti-file-text"></i>
+  </button>
+  <div class="sdiv"></div>
+  <button class="sn" onclick="showPage('settings')" title="Settings">
+    <i class="ti ti-adjustments-horizontal"></i>
+  </button>
+  <div class="sdiv"></div>
+<button class="sn" onclick="window.location.href='/email-scanner'" title="Email Scanner">
+  <i class="ti ti-mail-opened"></i>
+</button>
+  <button class="sn" onclick="window.location.href='/email-scanner'" title="Email Scanner">
+    <i class="ti ti-mail-opened"></i>
+  </button>
+</div>
+
+  <div class="main">
+    <div class="r4">
+      <div class="mcard" style="border-top-color:#534AB7">
+        <div class="mt">
+          <div class="mi" style="background:#EEEDFE;color:#534AB7"><i class="ti ti-link"></i></div>
+          <span class="md dup"><i class="ti ti-arrow-up" style="font-size:9px"></i>12%</span>
+        </div>
+        <div class="mv" id="mv1">0</div>
+        <div class="ml">URLs scanned</div>
+        <div class="sp" id="sp1"></div>
+      </div>
+      <div class="mcard" style="border-top-color:#E24B4A">
+        <div class="mt">
+          <div class="mi" style="background:#FCEBEB;color:#A32D2D"><i class="ti ti-alert-triangle"></i></div>
+          <span class="md ddn"><i class="ti ti-arrow-up" style="font-size:9px"></i>8%</span>
+        </div>
+        <div class="mv" id="mv2">0</div>
+        <div class="ml">Threats detected</div>
+        <div class="sp" id="sp2"></div>
+      </div>
+      <div class="mcard" style="border-top-color:#639922">
+        <div class="mt">
+          <div class="mi" style="background:#EAF3DE;color:#3B6D11"><i class="ti ti-check"></i></div>
+          <span class="md dup"><i class="ti ti-arrow-up" style="font-size:9px"></i>2%</span>
+        </div>
+        <div class="mv" id="mv3">0%</div>
+        <div class="ml">Model accuracy</div>
+        <div class="sp" id="sp3"></div>
+      </div>
+      <div class="mcard" style="border-top-color:#BA7517">
+        <div class="mt">
+          <div class="mi" style="background:#FAEEDA;color:#854F0B"><i class="ti ti-copy"></i></div>
+          <span class="md ddn"><i class="ti ti-arrow-up" style="font-size:9px"></i>5%</span>
+        </div>
+        <div class="mv" id="mv4">0</div>
+        <div class="ml">Clone sites found</div>
+        <div class="sp" id="sp4"></div>
+      </div>
+    </div>
+
+    <div class="r21">
+      <div class="card">
+        <div class="ch">
+          <div class="ct"><i class="ti ti-radar" style="color:#534AB7;font-size:15px"></i>Threat scanner</div>
+        </div>
+        <div class="stabs">
+          <button class="stab on" onclick="switchScan('url',this)"><i class="ti ti-link" style="font-size:12px"></i>URL</button>
+          <button class="stab" onclick="switchScan('email',this)"><i class="ti ti-mail" style="font-size:12px"></i>Email</button>
+          <button class="stab" onclick="switchScan('clone',this)"><i class="ti ti-copy" style="font-size:12px"></i>Clone</button>
+        </div>
+        <div id="sp-url">
+          <input class="inp" id="url-in" placeholder="https://suspicious-site.com/login">
+          <button class="sbtn" id="btn-url" onclick="doScan('url')"><i class="ti ti-search"></i>Analyze URL</button>
+        </div>
+        <div id="sp-email" style="display:none">
+
+  <!-- MODE SELECTION TABS -->
+  <div style="display:flex;gap:6px;margin-bottom:10px">
+    <button class="stab on" id="etab-total" onclick="switchEmailMode('total')" style="flex:1;justify-content:center">
+      <i class="ti ti-scan" style="font-size:12px"></i>Total Scan
+    </button>
+    <button class="stab" id="etab-individual" onclick="switchEmailMode('individual')" style="flex:1;justify-content:center">
+      <i class="ti ti-microscope" style="font-size:12px"></i>Individual Scan
+    </button>
+  </div>
+
+  <!-- GMAIL CONNECT — shared for both modes -->
+  <div style="background:#EEEDFE;border-radius:8px;padding:10px;margin-bottom:8px;border:0.5px solid #AFA9EC">
+    <div style="font-size:11px;font-weight:600;color:#26215C;margin-bottom:6px">
+      <i class="ti ti-inbox" style="color:#534AB7"></i>
+      Connect Gmail Inbox
+    </div>
+    <input class="inp" id="gmail-addr" type="email"
+      placeholder="your@gmail.com" style="margin-bottom:5px">
+    <input class="inp" id="gmail-pass" type="password"
+      placeholder="Gmail App Password">
+    <div style="font-size:10px;color:#7F77DD;margin-bottom:7px">
+      <i class="ti ti-info-circle" style="font-size:11px"></i>
+      Use Gmail App Password — not your regular Gmail password
+    </div>
+    <button class="sbtn" id="btn-fetch-gmail" onclick="fetchGmailEmails()">
+      <i class="ti ti-download"></i>Fetch Emails from Gmail
+    </button>
+  </div>
+
+  <div class="pb" id="pb-gmail"><div class="pf" id="pf-gmail"></div></div>
+
+  <!-- ── TOTAL SCAN MODE ─────────────────────────── -->
+  <div id="mode-total">
+
+    <!-- Email list for total scan -->
+    <div id="total-email-list" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <div style="font-size:11px;font-weight:600;color:#26215C">
+          <i class="ti ti-list" style="color:#534AB7"></i>
+          Fetched Emails
+        </div>
+        <span id="total-count" style="font-size:10px;color:#aaa"></span>
+      </div>
+      <div id="total-list-items"></div>
+      <button class="sbtn" id="btn-scan-all" onclick="scanAllEmails()" style="width:100%;margin-top:8px">
+        <i class="ti ti-scan"></i>Scan All Emails
+      </button>
+    </div>
+
+    <!-- Total scan results table -->
+    <div id="total-scan-results" style="display:none;margin-top:10px;animation:ri .3s ease">
+      <div style="font-size:11px;font-weight:600;color:#26215C;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+        <span><i class="ti ti-chart-bar" style="color:#534AB7"></i> Scan Results</span>
+        <div style="display:flex;gap:6px" id="total-stats"></div>
+      </div>
+      <div id="total-results-list"></div>
+    </div>
+
+    <!-- Manual paste for total scan -->
+    <div style="border-top:0.5px solid #e0e2ef;padding-top:8px;margin-top:8px">
+      <div style="font-size:10px;color:#aaa;margin-bottom:6px">
+        <i class="ti ti-edit" style="font-size:11px"></i>
+        Or paste email manually and scan
+      </div>
+      <input class="inp" id="em-sub" placeholder="Email subject...">
+      <textarea class="inp" id="em-body"
+        placeholder="Paste email body here..."></textarea>
+      <div onclick="document.getElementById('em-attachments').click()"
+        style="border:1.5px dashed #c7c2f0;border-radius:8px;padding:12px;text-align:center;cursor:pointer;margin-bottom:7px;background:#f8f9ff;transition:all .2s"
+        onmouseover="this.style.background='#EEEDFE'" onmouseout="this.style.background='#f8f9ff'">
+        <i class="ti ti-paperclip" style="font-size:16px;color:#534AB7"></i>
+        <div style="font-size:11px;color:#534AB7;font-weight:600;margin-top:4px">Click to attach files to scan</div>
+        <div id="em-attachments-label" style="font-size:10px;color:#999;margin-top:2px">No files selected (optional)</div>
+      </div>
+      <input type="file" id="em-attachments" multiple style="display:none"
+        onchange="document.getElementById('em-attachments-label').textContent = this.files.length ? this.files.length + ' file(s) selected: ' + Array.from(this.files).map(f=>f.name).join(', ') : 'No files selected (optional)'">
+      <button class="sbtn" id="btn-email" onclick="doScan('email')">
+        <i class="ti ti-search"></i>Analyze Email
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ── INDIVIDUAL SCAN MODE ───────────────────── -->
+  <div id="mode-individual" style="display:none">
+
+    <!-- Email list for individual selection -->
+    <div id="individual-email-list" style="display:none">
+      <div style="font-size:11px;font-weight:600;color:#26215C;margin-bottom:6px">
+        <i class="ti ti-cursor-text" style="color:#534AB7"></i>
+        Click any email to select and scan it
+      </div>
+      <div id="individual-list-items"></div>
+    </div>
+
+    <!-- Selected email detail view -->
+    <div id="selected-email-view" style="display:none;animation:ri .3s ease">
+      <button onclick="backToIndividualList()"
+        style="padding:4px 10px;background:#f8f9ff;border:0.5px solid #e0e2ef;border-radius:6px;font-size:11px;cursor:pointer;font-family:'Segoe UI',sans-serif;display:flex;align-items:center;gap:4px;color:#555;margin-bottom:8px">
+        <i class="ti ti-arrow-left"></i>Back to email list
+      </button>
+
+      <!-- Email content preview -->
+      <div style="background:#f8f9ff;border-radius:8px;padding:10px;border:0.5px solid #e0e2ef;margin-bottom:8px">
+        <div style="font-size:12px;font-weight:600;color:#26215C;margin-bottom:4px" id="sel-subject"></div>
+        <div style="font-size:10px;color:#888;margin-bottom:2px">
+          <i class="ti ti-user" style="font-size:10px"></i>
+          <span id="sel-from"></span>
+        </div>
+        <div style="font-size:10px;color:#aaa">
+          <i class="ti ti-clock" style="font-size:10px"></i>
+          <span id="sel-date"></span>
+        </div>
+        <div style="font-size:11px;color:#555;margin-top:8px;padding-top:8px;border-top:0.5px solid #e0e2ef;line-height:1.6;max-height:80px;overflow-y:auto" id="sel-body"></div>
+      </div>
+
+      <button class="sbtn" id="btn-individual-scan"
+        onclick="runIndividualEmailScan()" style="width:100%;margin-bottom:8px">
+        <i class="ti ti-microscope"></i>Run Deep Scan on This Email
+      </button>
+
+      <!-- Individual scan result -->
+      <div id="individual-scan-result" style="display:none;animation:ri .3s ease"></div>
+    </div>
+
+    <!-- Manual paste for individual scan -->
+    <div id="individual-manual" style="border-top:0.5px solid #e0e2ef;padding-top:8px;margin-top:8px">
+      <div style="font-size:10px;color:#aaa;margin-bottom:6px">
+        <i class="ti ti-edit" style="font-size:11px"></i>
+        Or paste one email manually for deep scan
+      </div>
+      <input class="inp" id="ind-sub" placeholder="Email subject...">
+      <input class="inp" id="ind-from-inp" placeholder="From (sender email)...">
+      <textarea class="inp" id="ind-body"
+        placeholder="Paste email body here..." style="height:70px"></textarea>
+      <button class="sbtn" onclick="runManualIndividualScan()">
+        <i class="ti ti-microscope"></i>Deep Scan This Email
+      </button>
+    </div>
+
+  </div>
+
+</div>
+        <div id="sp-clone" style="display:none">
+          <input class="inp" id="clone-in" placeholder="https://paypal-secure-update.xyz">
+          <button class="sbtn" id="btn-clone" onclick="doScan('clone')"><i class="ti ti-search"></i>Check Clone</button>
+        </div>
+        <div class="pb" id="pb"><div class="pf" id="pf"></div></div>
+        <div class="res" id="rb"></div>
+      </div>
+
+      <div class="card">
+        <div class="ch"><div class="ct"><i class="ti ti-chart-donut" style="color:#534AB7;font-size:15px"></i>Threat breakdown</div></div>
+        <canvas id="donut" width="200" height="130"></canvas>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px">
+          <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#555"><div style="width:8px;height:8px;border-radius:50%;background:#E24B4A;flex-shrink:0"></div>Phishing URLs<span id="leg-phishing-urls" style="margin-left:auto;color:#26215C;font-weight:600">0%</span></div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#555"><div style="width:8px;height:8px;border-radius:50%;background:#BA7517;flex-shrink:0"></div>Phishing emails<span id="leg-phishing-emails" style="margin-left:auto;color:#26215C;font-weight:600">0%</span></div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#555"><div style="width:8px;height:8px;border-radius:50%;background:#534AB7;flex-shrink:0"></div>Clone sites<span id="leg-clone-sites" style="margin-left:auto;color:#26215C;font-weight:600">0%</span></div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#555"><div style="width:8px;height:8px;border-radius:50%;background:#639922;flex-shrink:0"></div>Safe<span id="leg-safe" style="margin-left:auto;color:#26215C;font-weight:600">0%</span></div>
+        </div>
+        <div style="margin-top:14px">
+          <div class="slbl"><span>Model performance</span><span>Accuracy</span></div>
+          <div class="mr"><span class="mn">Random Forest</span><div class="mbw"><div class="mb" id="mb1" style="background:#534AB7"></div></div><span class="mp">96%</span></div>
+          <div class="mr"><span class="mn">BERT NLP</span><div class="mbw"><div class="mb" id="mb2" style="background:#1D9E75"></div></div><span class="mp">94%</span></div>
+          <div class="mr"><span class="mn">Clone detect</span><div class="mbw"><div class="mb" id="mb3" style="background:#BA7517"></div></div><span class="mp">91%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="r31">
+      <div class="card">
+        <div class="ch">
+          <div class="ct"><i class="ti ti-activity" style="color:#534AB7;font-size:15px"></i>Live threat feed</div>
+          <button class="ca">View all</button>
+        </div>
+        <div id="feed">
+          <div class="fi"><div class="fic fh"><i class="ti ti-alert-triangle"></i></div><div class="ft"><div class="fu">http://paypal-secure-verify.xyz/login</div><div class="fw">2 min ago · URL scan</div></div><span class="ftag fth">High</span></div>
+          <div class="fi"><div class="fic fl"><i class="ti ti-check"></i></div><div class="ft"><div class="fu">https://www.google.com/accounts</div><div class="fw">4 min ago · URL scan</div></div><span class="ftag ftl">Safe</span></div>
+          <div class="fi"><div class="fic fm"><i class="ti ti-mail"></i></div><div class="ft"><div class="fu">Urgent: Your bank account is suspended</div><div class="fw">9 min ago · Email scan</div></div><span class="ftag ftm">Medium</span></div>
+          <div class="fi"><div class="fic fh"><i class="ti ti-copy"></i></div><div class="ft"><div class="fu">http://netflix-login-free.tk/signup</div><div class="fw">15 min ago · Clone check</div></div><span class="ftag fth">High</span></div>
+          <div class="fi"><div class="fic fl"><i class="ti ti-check"></i></div><div class="ft"><div class="fu">https://github.com/login</div><div class="fw">21 min ago · URL scan</div></div><span class="ftag ftl">Safe</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ch"><div class="ct"><i class="ti ti-calendar" style="color:#534AB7;font-size:15px"></i>Activity heatmap</div></div>
+        <div class="slbl"><span>Last 7 weeks</span><span>Threat density</span></div>
+        <div class="hg" id="hmap"></div>
+        <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:#aaa">
+          <span>Low</span>
+          <div style="width:9px;height:9px;border-radius:2px;background:#e8eaf6"></div>
+          <div style="width:9px;height:9px;border-radius:2px;background:#CECBF6"></div>
+          <div style="width:9px;height:9px;border-radius:2px;background:#7F77DD"></div>
+          <div style="width:9px;height:9px;border-radius:2px;background:#FAC775"></div>
+          <div style="width:9px;height:9px;border-radius:2px;background:#E24B4A"></div>
+          <span>High</span>
+        </div>
+        <div class="today">
+          <div class="tcard">
+            <div class="tv" style="color:#A32D2D" id="td1">0</div>
+            <div class="tl">Blocked today</div>
+          </div>
+          <div class="tcard">
+            <div class="tv" style="color:#3B6D11" id="td2">0</div>
+            <div class="tl">Safe today</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- SCAN PAGE -->
+<div id="page-scan" style="display:none;flex:1;padding:14px">
+  <div class="card" style="max-width:600px;margin:0 auto">
+    <div class="ch">
+      <div class="ct"><i class="ti ti-radar" style="color:#534AB7"></i>Full Threat Scanner</div>
+    </div>
+    <div class="stabs">
+      <button class="stab on" onclick="switchScan('url',this)"><i class="ti ti-link" style="font-size:12px"></i>URL</button>
+      <button class="stab" onclick="switchScan('email',this)"><i class="ti ti-mail" style="font-size:12px"></i>Email</button>
+      <button class="stab" onclick="switchScan('clone',this)"><i class="ti ti-copy" style="font-size:12px"></i>Clone</button>
+    </div>
+    <div id="sp2-url">
+      <input class="inp" id="url-in2" placeholder="https://suspicious-site.com/login">
+      <button class="sbtn" onclick="doScan2('url')"><i class="ti ti-search"></i>Analyze URL</button>
+    </div>
+    <div id="sp2-email" style="display:none">
+      <input class="inp" id="em-sub2" placeholder="Email subject...">
+      <textarea class="inp" id="em-body2" placeholder="Paste email body here..."></textarea>
+      <div style="font-size:10px;color:#aaa;margin:6px 0 4px;display:flex;align-items:center;gap:4px">
+        <i class="ti ti-paperclip" style="font-size:11px"></i>
+        Attach files to scan for phishing content (optional)
+      </div>
+      <input type="file" class="inp" id="em-attachments2" multiple style="padding:8px">
+      <button class="sbtn" onclick="doScan2('email')"><i class="ti ti-search"></i>Analyze Email</button>
+    </div>
+    <div id="sp2-clone" style="display:none">
+      <input class="inp" id="clone-in2" placeholder="https://paypal-secure-update.xyz">
+      <button class="sbtn" onclick="doScan2('clone')"><i class="ti ti-search"></i>Check Clone</button>
+    </div>
+    <div class="pb" id="pb2"><div class="pf" id="pf2"></div></div>
+    <div class="res" id="rb2"></div>
+  </div>
+</div>
+
+<!-- HISTORY PAGE -->
+<div id="page-history" style="display:none;flex:1;padding:14px">
+  <div class="card">
+    <div class="ch">
+      <div class="ct"><i class="ti ti-history" style="color:#534AB7"></i>Scan History</div>
+      <button class="ca" onclick="loadHistory()"><i class="ti ti-refresh"></i> Refresh</button>
+    </div>
+    <div id="history-list">
+      <div style="text-align:center;padding:20px;color:#aaa;font-size:12px">
+        Click refresh to load history
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ANALYTICS PAGE -->
+<div id="page-analytics" style="display:none;flex:1;padding:14px">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div class="card">
+      <div class="ch"><div class="ct"><i class="ti ti-chart-pie" style="color:#534AB7"></i>Scan Types</div></div>
+      <canvas id="analytics-pie" width="300" height="200"></canvas>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct"><i class="ti ti-chart-bar" style="color:#534AB7"></i>Threat Levels</div></div>
+      <canvas id="analytics-bar" width="300" height="200"></canvas>
+    </div>
+    <div class="card" style="grid-column:span 2">
+      <div class="ch"><div class="ct"><i class="ti ti-info-circle" style="color:#534AB7"></i>Summary</div></div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+        <div class="tcard"><div class="tv" style="color:#534AB7" id="an-total">0</div><div class="tl">Total Scans</div></div>
+        <div class="tcard"><div class="tv" style="color:#A32D2D" id="an-high">0</div><div class="tl">High Risk</div></div>
+        <div class="tcard"><div class="tv" style="color:#854F0B" id="an-med">0</div><div class="tl">Medium Risk</div></div>
+        <div class="tcard"><div class="tv" style="color:#3B6D11" id="an-low">0</div><div class="tl">Safe</div></div>
+      </div>
+    </div>
+    <div class="card" style="grid-column:span 2">
+      <div class="ch"><div class="ct"><i class="ti ti-trending-up" style="color:#534AB7"></i>Scan Activity (Last 14 Days)</div></div>
+      <canvas id="analytics-trend" height="180"></canvas>
+    </div>
+    <div class="card" style="grid-column:span 2">
+      <div class="ch"><div class="ct"><i class="ti ti-target" style="color:#534AB7"></i>Top Targeted Brands</div></div>
+      <div id="analytics-brand-list" style="display:flex;flex-direction:column;gap:8px;padding:4px 0">
+        <div style="text-align:center;padding:16px;color:#bbb;font-size:11px">No brand impersonation attempts detected yet</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REPORTS PAGE -->
+<div id="page-reports" style="display:none;flex:1;padding:14px">
+  <div class="card">
+    <div class="ch">
+      <div class="ct"><i class="ti ti-file-text" style="color:#534AB7"></i>Security Reports</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div style="background:#EEEDFE;border-radius:10px;padding:16px;border:0.5px solid #AFA9EC">
+        <div style="font-size:13px;font-weight:600;color:#26215C;margin-bottom:6px">
+          <i class="ti ti-file-download" style="color:#534AB7"></i> Download PDF Report
+        </div>
+        <div style="font-size:11px;color:#555;margin-bottom:12px">
+          Download a complete PDF security report of all your scans.
+        </div>
+        <a href="/download/report" style="text-decoration:none">
+          <button class="sbtn"><i class="ti ti-download"></i>Download PDF Report</button>
+        </a>
+      </div>
+      <div style="background:#EAF3DE;border-radius:10px;padding:16px;border:0.5px solid #C0DD97">
+        <div style="font-size:13px;font-weight:600;color:#26215C;margin-bottom:8px">
+          <i class="ti ti-info-circle" style="color:#3B6D11"></i> Project Information
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px;color:#555">
+          <div><b>Project:</b> PhishShield AI</div>
+          <div><b>Version:</b> 1.0.0</div>
+          <div><b>ML Model:</b> Random Forest</div>
+          <div><b>Accuracy:</b> 84%</div>
+          <div><b>Email:</b> NLP Analysis</div>
+          <div><b>Clone:</b> BeautifulSoup</div>
+          <div><b>Backend:</b> Flask Python</div>
+          <div><b>Database:</b> SQLite</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS PAGE -->
+<div id="page-settings" style="display:none;flex:1;padding:14px">
+  <div class="card" style="max-width:500px">
+    <div class="ch">
+      <div class="ct"><i class="ti ti-settings" style="color:#534AB7"></i>Settings</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:#f8f9ff;border-radius:8px;border:0.5px solid #e0e2ef">
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#26215C">Dark Mode</div>
+          <div style="font-size:10px;color:#aaa">Switch between light and dark theme</div>
+        </div>
+        <button onclick="toggleDark()" id="dark-settings-btn" style="padding:6px 14px;background:#534AB7;color:#fff;border:none;border-radius:7px;font-size:11px;cursor:pointer;font-family:'Segoe UI',sans-serif">
+          Enable Dark Mode
+        </button>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:#f8f9ff;border-radius:8px;border:0.5px solid #e0e2ef">
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#26215C">Notifications</div>
+          <div style="font-size:10px;color:#aaa">Show alerts for high risk threats</div>
+        </div>
+        <div style="font-size:11px;font-weight:600;color:#3B6D11;background:#EAF3DE;padding:4px 10px;border-radius:20px">✅ Enabled</div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:#f8f9ff;border-radius:8px;border:0.5px solid #e0e2ef">
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#26215C">Logged in as</div>
+          <div style="font-size:10px;color:#534AB7">{{ user }}</div>
+        </div>
+        <a href="/logout" style="text-decoration:none">
+          <button style="padding:6px 14px;background:#FCEBEB;color:#A32D2D;border:0.5px solid #F09595;border-radius:7px;font-size:11px;cursor:pointer;font-family:'Segoe UI',sans-serif">
+            <i class="ti ti-logout"></i> Logout
+          </button>
+        </a>
+      </div>
+      <div style="padding:12px;background:#f8f9ff;border-radius:8px;border:0.5px solid #e0e2ef">
+        <div style="font-size:12px;font-weight:600;color:#26215C;margin-bottom:8px">About PhishShield AI</div>
+        <div style="font-size:11px;color:#555;line-height:1.8">
+          Version: 1.0.0<br>
+          Built with: Python, Flask, Scikit-learn, NLP<br>
+          Dataset: PhishTank — 40,000 URLs<br>
+          Model: Random Forest — 84% accuracy
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- TOAST -->
+<div class="toast-wrap" id="toast-wrap"></div>
+<!-- VOICE FAB BUTTON -->
+<button class="voice-fab" onclick="toggleVoicePanel()" id="voice-fab-btn" title="Voice Features">
+  <i class="ti ti-microphone"></i>
+</button>
+
+<!-- VOICE PANEL -->
+<div class="voice-panel" id="voice-panel">
+  <div class="voice-head">
+    <div class="voice-head-title">
+      <i class="ti ti-microphone"></i>
+      PhishShield Voice
+    </div>
+    <button class="voice-close" onclick="toggleVoicePanel()">
+      <i class="ti ti-x"></i>
+    </button>
+  </div>
+  <div class="voice-body">
+
+    <!-- Status display -->
+    <div class="voice-status" id="voice-status">
+      <div class="voice-waves idle" id="voice-waves">
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+      </div>
+      <div class="voice-text" id="voice-text">
+        Ready — Click a button below to start
+      </div>
+    </div>
+
+    <!-- Voice command buttons -->
+    <div class="voice-btn-row" style="margin-bottom:6px">
+      <button class="vbtn vbtn-primary" id="voice-listen-btn" onclick="startVoiceCommand()">
+        <i class="ti ti-microphone"></i>Voice Command
+      </button>
+      <button class="vbtn vbtn-outline" onclick="readLastResult()">
+        <i class="ti ti-volume"></i>Read Result
+      </button>
+    </div>
+    <div class="voice-btn-row">
+      <button class="vbtn vbtn-outline" onclick="readDashboardStats()">
+        <i class="ti ti-chart-bar"></i>Read Stats
+      </button>
+      <button class="vbtn vbtn-danger" onclick="stopSpeaking()">
+        <i class="ti ti-player-stop"></i>Stop
+      </button>
+    </div>
+
+    <!-- Voice commands help -->
+    <div class="voice-commands">
+      <div style="font-size:10px;font-weight:600;color:#26215C;margin:8px 0 5px">
+        <i class="ti ti-keyboard" style="color:#534AB7"></i>
+        Voice Commands
+      </div>
+      <div class="voice-cmd"><b>"Scan URL"</b> then say the URL</div>
+      <div class="voice-cmd"><b>"Scan email"</b> then say subject</div>
+      <div class="voice-cmd"><b>"Read report"</b> to hear results</div>
+      <div class="voice-cmd"><b>"Dashboard stats"</b> for summary</div>
+      <div class="voice-cmd"><b>"High risk"</b> to hear threats</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- VOICE ALERT TOAST -->
+<div id="voice-alert-wrap" style="position:fixed;bottom:140px;right:20px;z-index:9998;display:flex;flex-direction:column;gap:6px"></div>
+<!-- CHATBOT -->
+<button class="chat-bubble" onclick="toggleChat()" id="chat-bubble-btn">
+  <i class="ti ti-message-chatbot"></i>
+</button>
+<div class="chat-window" id="chat-window">
+  <div class="chat-head">
+    <div class="chat-head-icon"><i class="ti ti-shield-check"></i></div>
+    <div>
+      <div class="chat-head-name">PhishShield Assistant</div>
+      <div class="chat-head-status"><div class="chat-head-dot"></div>Online — AI Powered</div>
+    </div>
+    <button class="chat-close" onclick="toggleChat()"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="chat-messages" id="chat-messages">
+    <div class="msg msg-bot">Hello! I am your AI cybersecurity assistant. Ask me anything about phishing, URL scanning, or how to use PhishShield AI!</div>
+  </div>
+  <div class="chat-suggestions" id="suggestions">
+    <button class="sug" onclick="sendSuggestion('What is phishing?')">What is phishing?</button>
+    <button class="sug" onclick="sendSuggestion('How to scan a URL?')">Scan URL?</button>
+    <button class="sug" onclick="sendSuggestion('How to download report?')">Download report?</button>
+  </div>
+  <div class="chat-input-wrap">
+    <input class="chat-inp" id="chat-inp" placeholder="Ask me anything..." onkeypress="if(event.key==='Enter')sendMessage()">
+    <button class="chat-send" onclick="sendMessage()"><i class="ti ti-send"></i></button>
+  </div>
+</div>
+
+<script>
+// ── COUNTERS ─────────────────────────────────────────
+// ── PAGE NAVIGATION ──────────────────────────────────
+const pages = ['dashboard','scan','history','analytics','reports','settings'];
+
+function showPage(page){
+  // Show or hide main dashboard
+  const mainEl = document.querySelector('.main');
+  if(mainEl) mainEl.style.display = page==='dashboard' ? 'flex' : 'none';
+
+  // Show or hide other pages
+  pages.forEach(p => {
+    const el = document.getElementById('page-'+p);
+    if(el) el.style.display = p===page ? 'flex' : 'none';
+  });
+
+  // Update sidebar buttons
+  document.querySelectorAll('.sn').forEach(b => b.classList.remove('on'));
+  const idx  = pages.indexOf(page);
+  const btns = document.querySelectorAll('.sn');
+  if(btns[idx]) btns[idx].classList.add('on');
+
+  // Load data for specific pages
+  if(page==='history')   loadHistory();
+  if(page==='analytics') loadAnalytics();
+  if(page==='settings'){
+    const btn = document.getElementById('dark-settings-btn');
+    if(btn) btn.textContent = document.body.classList.contains('dark')
+      ? 'Disable Dark Mode' : 'Enable Dark Mode';
+  }
+}
+
+// ── HISTORY PAGE ─────────────────────────────────────
+async function loadHistory(){
+  const list = document.getElementById('history-list');
+  if(!list) return;
+  list.innerHTML =
+    '<div style="text-align:center;padding:20px;color:#aaa;font-size:12px">' +
+    '<i class="ti ti-loader" style="font-size:24px;display:block;margin-bottom:8px"></i>' +
+    'Loading...</div>';
+  try{
+    const res  = await fetch('/history');
+    const data = await res.json();
+    if(!data || data.length === 0){
+      list.innerHTML =
+        '<div style="text-align:center;padding:20px;color:#aaa;font-size:12px">' +
+        '<i class="ti ti-inbox" style="font-size:24px;display:block;margin-bottom:8px"></i>' +
+        'No scans yet! Go scan something first.</div>';
+      return;
+    }
+    list.innerHTML = data.map(s => {
+      const lv = s.threat_level || 'LOW';
+      const ic = lv==='HIGH'?'fh':lv==='MEDIUM'?'fm':'fl';
+      const ii = lv==='HIGH'?'ti-alert-triangle':lv==='MEDIUM'?'ti-alert-circle':'ti-check';
+      const fc = lv==='HIGH'?'fth':lv==='MEDIUM'?'ftm':'ftl';
+      return '<div class="fi">' +
+        '<div class="fic '+ic+'"><i class="ti '+ii+'"></i></div>' +
+        '<div class="ft">' +
+          '<div class="fu">'+(s.input||'N/A')+'</div>' +
+          '<div class="fw">'+(s.time||'')+' · '+s.type+' scan</div>' +
+        '</div>' +
+        '<span class="ftag '+fc+'">'+lv+'</span>' +
+        '<span style="font-size:10px;color:#aaa;margin-left:6px">'+
+          Math.round(s.confidence||0)+'%'+
+        '</span>' +
+      '</div>';
+    }).join('');
+  }catch(e){
+    list.innerHTML =
+      '<div style="text-align:center;padding:20px;color:#A32D2D;font-size:12px">' +
+      'Error loading history!</div>';
+  }
+}
+
+// ── ANALYTICS PAGE ───────────────────────────────────
+async function loadAnalytics(){
+  try{
+    const res  = await fetch('/history');
+    const data = await res.json();
+    if(!data || !data.length) return;
+
+    const high   = data.filter(s=>s.threat_level==='HIGH').length;
+    const medium = data.filter(s=>s.threat_level==='MEDIUM').length;
+    const low    = data.filter(s=>s.threat_level==='LOW').length;
+    const url    = data.filter(s=>s.type==='URL').length;
+    const email  = data.filter(s=>s.type==='Email').length;
+    const clone  = data.filter(s=>s.type==='Clone').length;
+
+    const t1 = document.getElementById('an-total');
+    const t2 = document.getElementById('an-high');
+    const t3 = document.getElementById('an-med');
+    const t4 = document.getElementById('an-low');
+    if(t1) t1.textContent = data.length;
+    if(t2) t2.textContent = high;
+    if(t3) t3.textContent = medium;
+    if(t4) t4.textContent = low;
+
+    const pie = document.getElementById('analytics-pie');
+    if(pie && !pie.dataset.rendered){
+      pie.dataset.rendered = '1';
+      new Chart(pie,{
+        type:'doughnut',
+        data:{
+          labels:['URL','Email','Clone'],
+          datasets:[{
+            data:[url,email,clone],
+            backgroundColor:['#534AB7','#BA7517','#E24B4A'],
+            borderWidth:0
+          }]
+        },
+        options:{
+          plugins:{legend:{position:'bottom',labels:{font:{size:11}}}},
+          animation:{duration:800}
+        }
+      });
+    }
+
+    const bar = document.getElementById('analytics-bar');
+    if(bar && !bar.dataset.rendered){
+      bar.dataset.rendered = '1';
+      new Chart(bar,{
+        type:'bar',
+        data:{
+          labels:['High Risk','Medium Risk','Safe'],
+          datasets:[{
+            data:[high,medium,low],
+            backgroundColor:['#E24B4A','#BA7517','#639922'],
+            borderRadius:6,
+            borderWidth:0
+          }]
+        },
+        options:{
+          plugins:{legend:{display:false}},
+          scales:{y:{beginAtZero:true,ticks:{font:{size:10}}}},
+          animation:{duration:800}
+        }
+      });
+    }
+  }catch(e){
+    console.log('Analytics error:',e);
+  }
+
+  // Trend (last 14 days) and top targeted brands - these use the FULL
+  // scan history (not just the last 20 from /history), via a dedicated
+  // endpoint that queries the database directly.
+  try{
+    const res2  = await fetch('/analytics/data');
+    const data2 = await res2.json();
+    if(data2 && !data2.error){
+      renderAnalyticsTrend(data2.trend || []);
+      renderAnalyticsBrands(data2.top_brands || []);
+    }
+  }catch(e){
+    console.log('Analytics trend/brand error:',e);
+  }
+}
+
+function renderAnalyticsTrend(trend){
+  const canvas = document.getElementById('analytics-trend');
+  if(!canvas || canvas.dataset.rendered) return;
+  if(!trend.length){
+    canvas.parentElement.innerHTML =
+      '<div class="ch"><div class="ct"><i class="ti ti-trending-up" style="color:#534AB7"></i>Scan Activity (Last 14 Days)</div></div>' +
+      '<div style="text-align:center;padding:24px;color:#bbb;font-size:11px">No scan activity in the last 14 days yet</div>';
+    return;
+  }
+  canvas.dataset.rendered = '1';
+  const labels = trend.map(t=>{
+    const d = new Date(t.day);
+    return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  });
+  new Chart(canvas,{
+    type:'line',
+    data:{
+      labels:labels,
+      datasets:[
+        {
+          label:'Total Scans',
+          data:trend.map(t=>t.total),
+          borderColor:'#534AB7',
+          backgroundColor:'rgba(83,74,183,0.08)',
+          fill:true,tension:0.35,pointRadius:3
+        },
+        {
+          label:'High Risk Detected',
+          data:trend.map(t=>t.high),
+          borderColor:'#E24B4A',
+          backgroundColor:'rgba(226,75,74,0.08)',
+          fill:true,tension:0.35,pointRadius:3
+        }
+      ]
+    },
+    options:{
+      plugins:{legend:{position:'bottom',labels:{font:{size:11}}}},
+      scales:{y:{beginAtZero:true,ticks:{font:{size:10},stepSize:1}}},
+      animation:{duration:800}
+    }
+  });
+}
+
+function renderAnalyticsBrands(brands){
+  const container = document.getElementById('analytics-brand-list');
+  if(!container) return;
+  if(!brands.length){
+    container.innerHTML =
+      '<div style="text-align:center;padding:16px;color:#bbb;font-size:11px">No brand impersonation attempts detected yet</div>';
+    return;
+  }
+  const maxCount = Math.max(...brands.map(b=>b.count));
+  container.innerHTML = brands.map(b=>
+    '<div style="display:flex;align-items:center;gap:10px;font-size:12px">' +
+      '<div style="width:90px;color:#555;font-weight:500;text-transform:capitalize;flex-shrink:0">'+b.brand+'</div>' +
+      '<div style="flex:1;height:16px;background:#f0f0f7;border-radius:6px;overflow:hidden">' +
+        '<div style="height:100%;background:linear-gradient(90deg,#534AB7,#7B6FE0);border-radius:6px;width:'+(b.count/maxCount*100)+'%"></div>' +
+      '</div>' +
+      '<div style="font-size:11px;color:#999;width:24px;text-align:right;flex-shrink:0">'+b.count+'</div>' +
+    '</div>'
+  ).join('');
+}
+
+// ── SCAN PAGE ────────────────────────────────────────
+async function doScan2(type){
+  const pb  = document.getElementById('pb2');
+  const pf  = document.getElementById('pf2');
+  const rb  = document.getElementById('rb2');
+  if(!pb||!pf||!rb) return;
+  pb.style.display='block';
+  pf.style.width='0%';
+  rb.style.display='none';
+  let w=0;
+  const iv=setInterval(()=>{
+    w=Math.min(w+Math.random()*14,94);
+    pf.style.width=w+'%';
+  },100);
+  let body={};
+  let endpoint='';
+  let fetchOptions=null;
+  if(type==='url'){
+    endpoint='/scan/url';
+    body={url:(document.getElementById('url-in2')||{}).value||''};
+  } else if(type==='email'){
+    endpoint='/scan/email';
+    const fileInput=document.getElementById('em-attachments2');
+    const hasFiles=fileInput && fileInput.files && fileInput.files.length>0;
+    if(hasFiles){
+      const fd=new FormData();
+      fd.append('subject',(document.getElementById('em-sub2')||{}).value||'');
+      fd.append('body',(document.getElementById('em-body2')||{}).value||'');
+      for(const f of fileInput.files){fd.append('attachments',f);}
+      fetchOptions={method:'POST',body:fd}; // no Content-Type - browser sets multipart boundary
+    }else{
+      body={
+        subject:(document.getElementById('em-sub2')||{}).value||'',
+        body:(document.getElementById('em-body2')||{}).value||''
+      };
+    }
+  } else {
+    endpoint='/scan/clone';
+    body={url:(document.getElementById('clone-in2')||{}).value||''};
+  }
+  if(!fetchOptions){
+    fetchOptions={method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)};
+  }
+  try{
+    const res=await fetch(endpoint,fetchOptions);
+    const data=await res.json();
+    clearInterval(iv);
+    pf.style.width='100%';
+    setTimeout(()=>{
+      pb.style.display='none';
+      showResult(type,rb,data);
+    },300);
+  }catch(e){
+    clearInterval(iv);
+    alert('Error: '+e.message);
+  }
+}
+function animCount(el,target,suffix,dur){
+  let s=0,step=target/60;
+  const iv=setInterval(()=>{
+    s=Math.min(s+step,target);
+    el.textContent=Math.round(s)+suffix;
+    if(Math.round(s)>=target)clearInterval(iv);
+  },dur/60);
+}
+setTimeout(()=>{
+  animCount(document.getElementById('mv3'),96,'%',1000);
+},300);
+setTimeout(()=>{
+  document.getElementById('mb1').style.width='96%';
+  document.getElementById('mb2').style.width='94%';
+  document.getElementById('mb3').style.width='91%';
+},600);
+
+// ── SPARKLINES ───────────────────────────────────────
+const sparkData=[[3,5,4,7,6,8,9],[8,6,9,7,10,8,12],[94,95,97,96,97,96,96],[2,4,3,5,4,6,5]];
+const sparkColors=['#534AB7','#E24B4A','#639922','#BA7517'];
+['sp1','sp2','sp3','sp4'].forEach((id,i)=>{
+  const el=document.getElementById(id);
+  const max=Math.max(...sparkData[i]);
+  sparkData[i].forEach((v,j)=>{
+    const b=document.createElement('div');
+    b.className='sb';
+    b.style.background=sparkColors[i];
+    b.style.height='0px';
+    el.appendChild(b);
+    setTimeout(()=>{b.style.height=Math.round((v/max)*20)+'px';},400+j*60);
+  });
+});
+
+// ── HEATMAP ──────────────────────────────────────────
+// Build 49 empty cells now (so the grid renders immediately); their real
+// colors get filled in by refreshOverview() once actual scan data for
+// each day comes back from /analytics/data. hmCells keeps a reference to
+// each cell in day order so refreshOverview can recolor them directly.
+const hm=document.getElementById('hmap');
+const hcols=['#e8eaf6','#EEEDFE','#AFA9EC','#FAC775','#E24B4A'];
+const hmCells=[];
+for(let i=0;i<49;i++){
+  const c=document.createElement('div');
+  c.className='hc';
+  hm.appendChild(c);
+  hmCells.push(c);
+}
+
+function colorForDay(day, maxScore){
+  // "Threat density" - weight HIGH-risk scans more heavily than plain
+  // scan volume, since a day with a couple of caught threats is more
+  // noteworthy than a day with many routine safe scans.
+  const score = day.total + day.high*2;
+  if(score<=0) return hcols[0];
+  if(maxScore<=0) return hcols[0];
+  const idx = Math.min(hcols.length-1, Math.max(1, Math.ceil((score/maxScore)*(hcols.length-1))));
+  return hcols[idx];
+}
+
+// ── DONUT CHART ────────────────────────────────────────
+// Shell chart with zeroed data; refreshOverview() swaps in real numbers
+// (and calls donutChart.update()) once /analytics/data responds.
+let donutChart;
+setTimeout(()=>{
+  const ctx=document.getElementById('donut').getContext('2d');
+  donutChart=new Chart(ctx,{
+    type:'doughnut',
+    data:{datasets:[{data:[0,0,0,0],backgroundColor:['#E24B4A','#BA7517','#534AB7','#639922'],borderWidth:0,hoverOffset:4}]},
+    options:{cutout:'70%',plugins:{legend:{display:false}},animation:{duration:1000}}
+  });
+  refreshOverview();
+},500);
+
+// ── LIVE OVERVIEW DATA ────────────────────────────────
+// Pulls real counts from /analytics/data (backed by the scans table) and
+// updates the top stat cards, threat-breakdown donut + legend, activity
+// heatmap, and today's blocked/safe cards. Called on page load and again
+// after every scan from the quick-scan widget, so the dashboard reflects
+// actual usage instead of a fixed placeholder snapshot.
+async function refreshOverview(){
+  try{
+    const res  = await fetch('/analytics/data');
+    const data = await res.json();
+    if(!data || data.error) return;
+
+    const cat = data.category_breakdown || {phishing_urls:0,phishing_emails:0,clone_sites:0,safe:0};
+    const type = data.type_breakdown || {};
+
+    const v1=document.getElementById('mv1');
+    const v2=document.getElementById('mv2');
+    const v4=document.getElementById('mv4');
+    const td1=document.getElementById('td1');
+    const td2=document.getElementById('td2');
+    if(v1) v1.textContent = type.URL || 0;
+    if(v2) v2.textContent = data.threats_found || 0;
+    if(v4) v4.textContent = cat.clone_sites || 0;
+    if(td1) td1.textContent = (data.today && data.today.blocked) || 0;
+    if(td2) td2.textContent = (data.today && data.today.safe) || 0;
+
+    // Donut + legend
+    const donutTotal = cat.phishing_urls + cat.phishing_emails + cat.clone_sites + cat.safe;
+    const pct = n => donutTotal>0 ? Math.round((n/donutTotal)*100) : 0;
+    if(donutChart){
+      donutChart.data.datasets[0].data = [cat.phishing_urls, cat.phishing_emails, cat.clone_sites, cat.safe];
+      donutChart.update();
+    }
+    const legU=document.getElementById('leg-phishing-urls');
+    const legE=document.getElementById('leg-phishing-emails');
+    const legC=document.getElementById('leg-clone-sites');
+    const legS=document.getElementById('leg-safe');
+    if(legU) legU.textContent = pct(cat.phishing_urls)+'%';
+    if(legE) legE.textContent = pct(cat.phishing_emails)+'%';
+    if(legC) legC.textContent = pct(cat.clone_sites)+'%';
+    if(legS) legS.textContent = pct(cat.safe)+'%';
+
+    // Heatmap - real per-day activity, oldest to newest matching the
+    // 49-cell grid order it was built in.
+    const heatmap = data.heatmap || [];
+    if(heatmap.length === hmCells.length){
+      const maxScore = Math.max(...heatmap.map(d=>d.total+d.high*2), 0);
+      heatmap.forEach((day,i)=>{
+        hmCells[i].style.background = colorForDay(day, maxScore);
+        hmCells[i].title = day.day+': '+day.total+' scan(s), '+day.high+' high-risk';
+      });
+    }
+  }catch(e){
+    console.log('Overview refresh error:',e);
+  }
+}
+
+// ── SCANNER ──────────────────────────────────────────
+function switchScan(type,btn){
+  document.querySelectorAll('.stab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  ['url','email','clone'].forEach(t=>{
+    document.getElementById('sp-'+t).style.display=t===type?'block':'none';
+  });
+  document.getElementById('rb').style.display='none';
+  document.getElementById('pb').style.display='none';
+}
+
+async function doScan(type){
+  const btn=document.getElementById('btn-'+type);
+  const pb=document.getElementById('pb');
+  const pf=document.getElementById('pf');
+  const rb=document.getElementById('rb');
+  btn.classList.add('run');
+  btn.innerHTML='<i class="ti ti-loader"></i> Scanning...';
+  pb.style.display='block';pf.style.width='0%';rb.style.display='none';
+  let w=0;
+  const iv=setInterval(()=>{w=Math.min(w+Math.random()*14,94);pf.style.width=w+'%';},100);
+
+  let endpoint='';
+  let fetchOptions={};
+
+  if(type==='url'){
+    endpoint='/scan/url';
+    fetchOptions={method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:document.getElementById('url-in').value.trim()})};
+  }else if(type==='clone'){
+    endpoint='/scan/clone';
+    fetchOptions={method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:document.getElementById('clone-in').value.trim()})};
+  }else if(type==='email'){
+    endpoint='/scan/email';
+    const fileInput=document.getElementById('em-attachments');
+    const hasFiles=fileInput && fileInput.files && fileInput.files.length>0;
+    if(hasFiles){
+      const fd=new FormData();
+      fd.append('subject',document.getElementById('em-sub').value);
+      fd.append('body',document.getElementById('em-body').value);
+      for(const f of fileInput.files){fd.append('attachments',f);}
+      fetchOptions={method:'POST',body:fd}; // no Content-Type header - browser sets multipart boundary
+    }else{
+      fetchOptions={method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subject:document.getElementById('em-sub').value,body:document.getElementById('em-body').value})};
+    }
+  }
+
+  try{
+    const res=await fetch(endpoint,fetchOptions);
+    const data=await res.json();
+    clearInterval(iv);pf.style.width='100%';
+    setTimeout(()=>{
+      pb.style.display='none';
+      btn.classList.remove('run');
+      btn.innerHTML='<i class="ti ti-search"></i> Scan again';
+      showResult(type,rb,data);
+      refreshOverview();
+    },300);
+  }catch(e){
+    clearInterval(iv);
+    btn.classList.remove('run');
+    btn.innerHTML='<i class="ti ti-search"></i> Analyze';
+    alert('Error: '+e.message);
+  }
+}
+
+function showResult(type,rb,data){
+  if(data.valid===false || (data.error && !data.threat_level)){
+    rb.innerHTML='<span class="rtag rh"><i class="ti ti-alert-triangle" style="font-size:10px"></i>Invalid URL</span>'
+      +'<div class="rf" style="color:#A32D2D;font-size:12px;padding:6px 0">'
+      +(data.message||'Invalid URL. Please enter a valid URL (e.g. https://example.com).')
+      +'</div>';
+    rb.style.display='block';
+    return;
+  }
+  const lv=data.threat_level||'LOW';
+  const conf=data.confidence||0;
+  const tc=lv==='HIGH'?'rh':lv==='MEDIUM'?'rm':'rl';
+  const bc=lv==='HIGH'?'#E24B4A':lv==='MEDIUM'?'#BA7517':'#639922';
+  const ic=lv==='HIGH'?'ti-alert-triangle':lv==='MEDIUM'?'ti-alert-circle':'ti-check';
+  const label=lv==='HIGH'?'HIGH RISK':lv==='MEDIUM'?'MEDIUM RISK':'LOW RISK';
+  let findings=[];
+  if(type==='url'){
+    if(data.reason==='trusted_domain'){
+      findings=[{l:'Phishing probability',p:0},{l:'Suspicious URL pattern',p:0},{l:'Trusted domain match',p:100}];
+    }else if(data.reason==='typosquatting'){
+      findings=[{l:'Phishing probability',p:conf},{l:'Typosquatting detected ('+(data.impersonated_brand||'brand')+')',p:100},{l:'Suspicious URL pattern',p:conf}];
+    }else if(data.reason==='insecure_protocol'){
+      findings=[{l:'Phishing probability',p:conf},{l:'Insecure protocol (http, not https)',p:100},{l:'Brand mismatch ('+(data.impersonated_brand||'brand')+')',p:conf}];
+    }else if(data.reason==='invalid_extension'){
+      findings=[{l:'Phishing probability',p:conf},{l:'Untrusted/unrecognized domain extension',p:100},{l:'Suspicious URL pattern',p:conf}];
+    }else{
+      if(data.explanation && data.explanation.length){
+        findings=data.explanation.map(e=>({
+          l:e.description+(e.direction==='increases_risk'?' (raises risk)':' (lowers risk)'),
+          p:Math.min(e.impact*400,99)
+        }));
+      }else{
+        findings=[{l:'Phishing probability',p:conf},{l:'Suspicious URL pattern',p:conf},{l:'ML model confidence',p:conf}];
+      }
+    }
+  }
+  else if(type==='email'){
+    const emailLevel=data.email_only_threat_level||lv;
+    const emailConf=data.email_only_confidence!==undefined?data.email_only_confidence:conf;
+    findings=[{l:'AI phishing pattern (email body)',p:emailConf},{l:'Urgency score: '+(data.urgency_score||0),p:Math.min(emailConf+3,99)},{l:'Suspicious links: '+(data.suspicious_links||[]).length,p:Math.min(emailConf-8,50)}];
+    if(data.attachments&&data.attachments.length){
+      data.attachments.forEach(a=>{
+        findings.push({l:'Attachment "'+a.filename+'"',p:a.confidence});
+      });
+    }
+  }
+  else{
+    // Clone tab - use the ACTUAL findings/reasons detect_clone() returned
+    // (Page Title mismatch, Login Form, Protocol Security, Page
+    // Verification when the page couldn't be fetched, etc.) instead of
+    // generic hardcoded labels that don't reflect what was really found.
+    if(data.findings && data.findings.length){
+      findings=data.findings.map(f=>({
+        l:f.check+': '+f.result,
+        p:f.risk==='HIGH'?90:f.risk==='MEDIUM'?55:f.risk==='INFO'?15:conf
+      }));
+    }else{
+      findings=[{l:'Clone pattern detected',p:conf},{l:'Brand impersonation check',p:Math.min(conf+2,99)},{l:'Domain mismatch',p:Math.min(conf-3,99)}];
+    }
+  }
+  rb.innerHTML='<span class="rtag '+tc+'"><i class="ti '+ic+'" style="font-size:10px"></i>'+label+' · '+Math.round(conf)+'%</span>'
+    +findings.map(f=>'<div class="rf"><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+f.l+'</span><div class="rbw"><div class="rb" data-w="'+Math.max(f.p,0)+'" style="background:'+bc+'"></div></div><span style="font-size:10px;color:#888;min-width:26px;text-align:right">'+Math.round(Math.max(f.p,0))+'%</span></div>').join('');
+  if(type==='url'&&data.explanation&&data.explanation.length){
+    rb.innerHTML+='<div style="margin-top:6px;font-size:10px;color:#999;font-style:italic">Bars show each feature\'s relative influence on this prediction (SHAP analysis), not raw values.</div>';
+  }
+  if(type==='email'&&data.attachments&&data.attachments.length){
+    rb.innerHTML+=data.attachments.map(a=>
+      '<div style="margin-top:8px;padding:8px;border-radius:8px;background:rgba(0,0,0,0.04);font-size:11px;color:#888">'
+      +'<b style="color:#666">'+a.filename+'</b> ('+a.threat_level+'): '
+      +a.reasons.join('; ')
+      +'</div>'
+    ).join('');
+  }
+  rb.style.display='block';
+  setTimeout(()=>{rb.querySelectorAll('.rb').forEach(b=>{b.style.width=b.dataset.w+'%';});},100);
+  const inp=type==='email'?document.getElementById('em-sub'):document.getElementById(type==='url'?'url-in':'clone-in');
+  const feed=document.getElementById('feed');
+  const ic2=lv==='HIGH'?'fh':lv==='MEDIUM'?'fm':'fl';
+  const ii=lv==='HIGH'?'ti-alert-triangle':lv==='MEDIUM'?'ti-alert-circle':'ti-check';
+  const fc=lv==='HIGH'?'fth':lv==='MEDIUM'?'ftm':'ftl';
+  const lbl=lv==='HIGH'?'High':lv==='MEDIUM'?'Medium':'Safe';
+  const ni=document.createElement('div');
+  ni.className='fi';
+  ni.innerHTML='<div class="fic '+ic2+'"><i class="ti '+ii+'"></i></div><div class="ft"><div class="fu">'+(inp.value||'New scan')+'</div><div class="fw">Just now · '+type+' scan</div></div><span class="ftag '+fc+'">'+lbl+'</span>';
+  feed.insertBefore(ni,feed.firstChild);
+  if(feed.children.length>6)feed.removeChild(feed.lastChild);
+  const msgs={HIGH:'HIGH RISK detected in '+type+' scan!',MEDIUM:'MEDIUM RISK found in '+type+' scan',LOW:'Safe result from '+type+' scan'};
+  addNotification(msgs[lv]||'Scan completed',lv);
+}
+
+// ── DARK MODE ────────────────────────────────────────
+function toggleDark(){
+  const body=document.body;
+  const icon=document.getElementById('dark-icon');
+  const isDark=body.classList.toggle('dark');
+  icon.className=isDark?'ti ti-sun':'ti ti-moon';
+  localStorage.setItem('darkMode',isDark);
+}
+if(localStorage.getItem('darkMode')==='true'){
+  document.body.classList.add('dark');
+  const icon=document.getElementById('dark-icon');
+  if(icon)icon.className='ti ti-sun';
+}
+
+// ── NOTIFICATIONS ────────────────────────────────────
+let notifCount=0;
+function toggleNotif(){
+  document.getElementById('notif-panel').classList.toggle('open');
+}
+document.addEventListener('click',function(e){
+  const wrap=document.querySelector('.notif-wrap');
+  if(wrap&&!wrap.contains(e.target)){
+    document.getElementById('notif-panel').classList.remove('open');
+  }
+});
+function addNotification(message,level){
+  notifCount++;
+  const badge=document.getElementById('notif-badge');
+  badge.textContent=notifCount;
+  badge.classList.add('show');
+  const list=document.getElementById('notif-list');
+  const empty=document.getElementById('notif-empty');
+  if(empty)empty.remove();
+  const ic=level==='HIGH'?'ni-h':level==='MEDIUM'?'ni-m':'ni-l';
+  const icon=level==='HIGH'?'ti-alert-triangle':level==='MEDIUM'?'ti-alert-circle':'ti-check';
+  const item=document.createElement('div');
+  item.className='notif-item';
+  item.innerHTML='<div class="notif-icon '+ic+'"><i class="ti '+icon+'"></i></div><div class="notif-text"><div class="notif-msg">'+message+'</div><div class="notif-time">Just now</div></div>';
+  list.insertBefore(item,list.firstChild);
+  showToast(message,level);
+}
+function clearNotifs(){
+  notifCount=0;
+  document.getElementById('notif-badge').classList.remove('show');
+  document.getElementById('notif-list').innerHTML='<div class="notif-empty" id="notif-empty">No notifications yet</div>';
+  document.getElementById('notif-panel').classList.remove('open');
+}
+function showToast(message,level){
+  const wrap=document.getElementById('toast-wrap');
+  const tc=level==='HIGH'?'toast-h':level==='MEDIUM'?'toast-m':'toast-l';
+  const icon=level==='HIGH'?'ti-alert-triangle':level==='MEDIUM'?'ti-alert-circle':'ti-check';
+  const t=document.createElement('div');
+  t.className='toast '+tc;
+  t.innerHTML='<i class="ti '+icon+'" style="font-size:15px"></i>'+message;
+  wrap.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(50px)';setTimeout(()=>t.remove(),300);},3500);
+}
+
+// ── CHATBOT ──────────────────────────────────────────
+function toggleChat(){
+  const w=document.getElementById('chat-window');
+  const b=document.getElementById('chat-bubble-btn');
+  const isOpen=w.classList.contains('open');
+  w.classList.toggle('open');
+  b.innerHTML=isOpen?'<i class="ti ti-message-chatbot"></i>':'<i class="ti ti-x"></i>';
+  if(!isOpen)document.getElementById('chat-inp').focus();
+}
+function addMessage(text,isUser){
+  const msgs=document.getElementById('chat-messages');
+  const div=document.createElement('div');
+  div.className='msg '+(isUser?'msg-user':'msg-bot');
+  div.textContent=text;
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+function showTyping(){
+  const msgs=document.getElementById('chat-messages');
+  const div=document.createElement('div');
+  div.className='msg-typing';
+  div.id='typing-indicator';
+  div.innerHTML='<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+function removeTyping(){
+  const t=document.getElementById('typing-indicator');
+  if(t)t.remove();
+}
+function hideSuggestions(){
+  const s=document.getElementById('suggestions');
+  if(s)s.style.display='none';
+}
+async function sendMessage(){
+  const inp=document.getElementById('chat-inp');
+  const msg=inp.value.trim();
+  if(!msg)return;
+  inp.value='';
+  hideSuggestions();
+  addMessage(msg,true);
+  showTyping();
+  try{
+    const res=await fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg})});
+    const data=await res.json();
+    setTimeout(()=>{removeTyping();addMessage(data.reply,false);},1000);
+  }catch(e){
+    removeTyping();
+    addMessage('Sorry I could not connect. Please try again!',false);
+  }
+}
+async function fetchEmails(){
+  const email    = document.getElementById('gmail-addr').value.trim();
+  const password = document.getElementById('gmail-pass').value.trim();
+  const btn      = document.getElementById('btn-fetch');
+  const results  = document.getElementById('inbox-results');
+
+  if(!email || !password){
+    alert('Please enter Gmail address and App Password!');
+    return;
+  }
+
+  btn.classList.add('run');
+  btn.innerHTML = '<i class="ti ti-loader"></i> Fetching emails...';
+  results.innerHTML = '';
+
+  try{
+    const res  = await fetch('/fetch/emails', {
+      method  : 'POST',
+      headers : {'Content-Type': 'application/json'},
+      body    : JSON.stringify({email, password})
+    });
+    const data = await res.json();
+
+    btn.classList.remove('run');
+    btn.innerHTML = '<i class="ti ti-download"></i> Fetch & Scan Inbox';
+
+    if(!data.success){
+      results.innerHTML =
+        '<div style="background:#FCEBEB;border-radius:8px;padding:10px;font-size:11px;color:#A32D2D;margin-top:8px">' +
+        '<i class="ti ti-alert-circle"></i> Error: ' + data.error +
+        '<br><br>Make sure you have enabled Gmail App Password.' +
+        '</div>';
+      return;
+    }
+
+    if(data.emails.length === 0){
+      results.innerHTML =
+        '<div style="text-align:center;font-size:12px;color:#aaa;padding:16px">' +
+        '<i class="ti ti-inbox" style="font-size:24px;display:block;margin-bottom:6px"></i>' +
+        'No unread emails found!</div>';
+      return;
+    }
+
+    let html = '<div style="font-size:11px;font-weight:600;color:#26215C;margin:10px 0 6px;display:flex;align-items:center;gap:5px">' +
+      '<i class="ti ti-inbox" style="color:#534AB7"></i>' +
+      data.emails.length + ' emails scanned from inbox</div>';
+
+    data.emails.forEach(em => {
+      const tc = em.threat_level==='HIGH'   ? '#FCEBEB' :
+                 em.threat_level==='MEDIUM' ? '#FAEEDA' : '#EAF3DE';
+      const bc = em.threat_level==='HIGH'   ? '#F09595' :
+                 em.threat_level==='MEDIUM' ? '#FAC775' : '#C0DD97';
+      const fc = em.threat_level==='HIGH'   ? '#A32D2D' :
+                 em.threat_level==='MEDIUM' ? '#854F0B' : '#3B6D11';
+      const ic = em.threat_level==='HIGH'   ? 'ti-alert-triangle' :
+                 em.threat_level==='MEDIUM' ? 'ti-alert-circle'   : 'ti-check';
+
+      html +=
+        '<div style="background:'+tc+';border:0.5px solid '+bc+';border-radius:8px;padding:9px;margin-bottom:6px">' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">' +
+            '<div style="font-size:11px;font-weight:600;color:#26215C;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px">' +
+              em.subject +
+            '</div>' +
+            '<span style="font-size:10px;font-weight:600;color:'+fc+';display:flex;align-items:center;gap:3px">' +
+              '<i class="ti '+ic+'" style="font-size:11px"></i>' +
+              em.threat_level +
+            '</span>' +
+          '</div>' +
+          '<div style="font-size:10px;color:#888;margin-bottom:3px">' +
+            '<i class="ti ti-user" style="font-size:10px"></i> ' + em.from +
+          '</div>' +
+          '<div style="font-size:10px;color:#aaa">' +
+            '<i class="ti ti-clock" style="font-size:10px"></i> ' + em.date +
+            ' &nbsp;|&nbsp; Confidence: ' + Math.round(em.confidence) + '%' +
+          '</div>' +
+        '</div>';
+
+      addNotification(em.threat_level + ' RISK email from ' + em.from, em.threat_level);
+    });
+
+    results.innerHTML = html;
+
+  }catch(e){
+    btn.classList.remove('run');
+    btn.innerHTML = '<i class="ti ti-download"></i> Fetch & Scan Inbox';
+    results.innerHTML =
+      '<div style="background:#FCEBEB;border-radius:8px;padding:10px;font-size:11px;color:#A32D2D;margin-top:8px">' +
+      'Connection error. Make sure Flask is running!</div>';
+  }
+}
+// ── EMAIL MODE SWITCH ─────────────────────────────
+let fetchedEmails    = [];
+let selectedEmail    = null;
+let currentEmailMode = 'total';
+
+function switchEmailMode(mode){
+  currentEmailMode = mode;
+  document.getElementById('etab-total').classList.toggle('on', mode==='total');
+  document.getElementById('etab-individual').classList.toggle('on', mode==='individual');
+  document.getElementById('mode-total').style.display      = mode==='total'      ? 'block' : 'none';
+  document.getElementById('mode-individual').style.display = mode==='individual' ? 'block' : 'none';
+
+  // If emails already fetched show them in the new mode
+  if(fetchedEmails.length > 0){
+    if(mode==='total')      renderTotalList();
+    if(mode==='individual') renderIndividualList();
+  }
+}
+
+// ── FETCH GMAIL EMAILS ────────────────────────────
+async function fetchGmailEmails(){
+  const email    = document.getElementById('gmail-addr').value.trim();
+  const password = document.getElementById('gmail-pass').value.trim();
+
+  if(!email || !password){
+    alert('Please enter Gmail address and App Password!');
+    return;
+  }
+
+  const btn = document.getElementById('btn-fetch-gmail');
+  const pb  = document.getElementById('pb-gmail');
+  const pf  = document.getElementById('pf-gmail');
+  btn.classList.add('run');
+  btn.innerHTML = '<i class="ti ti-loader"></i> Fetching emails...';
+  pb.style.display = 'block';
+  pf.style.width   = '0%';
+
+  let w = 0;
+  const iv = setInterval(()=>{
+    w = Math.min(w + Math.random()*12, 94);
+    pf.style.width = w + '%';
+  }, 150);
+
+  try{
+    const res  = await fetch('/fetch/emails', {
+      method  : 'POST',
+      headers : {'Content-Type':'application/json'},
+      body    : JSON.stringify({email, password})
+    });
+    const data = await res.json();
+    clearInterval(iv);
+    pf.style.width = '100%';
+    setTimeout(()=>{
+      pb.style.display = 'none';
+      btn.classList.remove('run');
+      btn.innerHTML = '<i class="ti ti-download"></i> Fetch Emails from Gmail';
+
+      if(!data.success){
+        alert('Error: ' + data.error + '\n\nMake sure you have enabled Gmail App Password.');
+        return;
+      }
+
+      fetchedEmails = data.emails || [];
+
+      if(fetchedEmails.length === 0){
+        alert('No unread emails found in inbox!');
+        return;
+      }
+
+      // /fetch/emails now only fetches - no scanning happens until the
+      // user explicitly clicks "Scan All Emails" (bulk) or "Deep Scan"
+      // (individual). Just show the plain fetched list here.
+      if(currentEmailMode === 'total')      renderTotalList();
+      if(currentEmailMode === 'individual') renderIndividualList();
+
+    }, 300);
+
+  }catch(e){
+    clearInterval(iv);
+    btn.classList.remove('run');
+    btn.innerHTML = '<i class="ti ti-download"></i> Fetch Emails from Gmail';
+    alert('Connection error: ' + e.message);
+  }
+}
+
+// ── TOTAL SCAN — Render email list ────────────────
+function renderTotalList(){
+  const container = document.getElementById('total-email-list');
+  const items     = document.getElementById('total-list-items');
+  const count     = document.getElementById('total-count');
+
+  count.textContent = fetchedEmails.length + ' emails fetched';
+  items.innerHTML   = fetchedEmails.map((em, i) =>
+    '<div style="display:flex;align-items:center;gap:8px;padding:8px;border-radius:7px;background:#f8f9ff;border:0.5px solid #e0e2ef;margin-bottom:5px">' +
+      '<div style="width:6px;height:6px;border-radius:50%;background:#534AB7;flex-shrink:0"></div>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="font-size:11px;font-weight:500;color:#26215C;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' +
+          (em.subject||'No Subject') +
+        '</div>' +
+        '<div style="font-size:10px;color:#aaa">' +
+          (em.from||'Unknown') + ' · ' + (em.date||'') +
+        '</div>' +
+      '</div>' +
+      '<span style="font-size:10px;background:#EEEDFE;color:#534AB7;padding:2px 7px;border-radius:10px;flex-shrink:0">#'+(i+1)+'</span>' +
+    '</div>'
+  ).join('');
+
+  container.style.display          = 'block';
+  document.getElementById('total-scan-results').style.display = 'none';
+}
+
+// ── TOTAL SCAN — Scan all emails ──────────────────
+async function scanAllEmails(){
+  const btn = document.getElementById('btn-scan-all');
+  btn.classList.add('run');
+  btn.innerHTML = '<i class="ti ti-loader"></i> Scanning all ' + fetchedEmails.length + ' emails...';
+
+  try{
+    const res  = await fetch('/scan/email/bulk', {
+      method  : 'POST',
+      headers : {'Content-Type':'application/json'},
+      body    : JSON.stringify({emails: fetchedEmails})
+    });
+    const data = await res.json();
+
+    btn.classList.remove('run');
+    btn.innerHTML = '<i class="ti ti-scan"></i> Scan All Emails';
+
+    if(!data.success){
+      alert('Error scanning emails!');
+      return;
+    }
+
+    showTotalScanResults(data.results);
+
+  }catch(e){
+    btn.classList.remove('run');
+    btn.innerHTML = '<i class="ti ti-scan"></i> Scan All Emails';
+    alert('Error: ' + e.message);
+  }
+}
+
+// ── TOTAL SCAN — Show results ─────────────────────
+function showTotalScanResults(results){
+  const high   = results.filter(r=>r.threat_level==='HIGH').length;
+  const medium = results.filter(r=>r.threat_level==='MEDIUM').length;
+  const low    = results.filter(r=>r.threat_level==='LOW').length;
+
+  document.getElementById('total-stats').innerHTML =
+    '<span style="font-size:10px;background:#FCEBEB;color:#A32D2D;padding:2px 8px;border-radius:10px;font-weight:600">'+high+' High</span>'+
+    '<span style="font-size:10px;background:#FAEEDA;color:#854F0B;padding:2px 8px;border-radius:10px;font-weight:600">'+medium+' Medium</span>'+
+    '<span style="font-size:10px;background:#EAF3DE;color:#3B6D11;padding:2px 8px;border-radius:10px;font-weight:600">'+low+' Safe</span>';
+
+  document.getElementById('total-results-list').innerHTML =
+    results.map((r, i) => {
+      const lv  = r.threat_level || 'LOW';
+      const tc  = lv==='HIGH'?'#FCEBEB':lv==='MEDIUM'?'#FAEEDA':'#EAF3DE';
+      const bc  = lv==='HIGH'?'#F09595':lv==='MEDIUM'?'#FAC775':'#C0DD97';
+      const fc  = lv==='HIGH'?'#A32D2D':lv==='MEDIUM'?'#854F0B':'#3B6D11';
+      const ic  = lv==='HIGH'?'ti-alert-triangle':lv==='MEDIUM'?'ti-alert-circle':'ti-check';
+      const conf = Math.round(r.confidence||0);
+
+      return '<div style="background:'+tc+';border:0.5px solid '+bc+';border-radius:8px;padding:9px;margin-bottom:6px">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">' +
+          '<div style="font-size:11px;font-weight:600;color:#26215C;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px">' +
+            (r.subject||'No Subject') +
+          '</div>' +
+          '<div style="display:flex;align-items:center;gap:5px">' +
+            '<span style="font-size:10px;font-weight:600;color:'+fc+';display:flex;align-items:center;gap:3px">' +
+              '<i class="ti '+ic+'" style="font-size:11px"></i>'+lv+
+            '</span>' +
+            '<button onclick="viewEmailIndividual('+i+')" ' +
+              'style="padding:2px 7px;background:#534AB7;color:#fff;border:none;border-radius:5px;font-size:10px;cursor:pointer;font-family:\'Segoe UI\',sans-serif">' +
+              '<i class="ti ti-microscope" style="font-size:10px"></i> Deep Scan' +
+            '</button>' +
+          '</div>' +
+        '</div>' +
+        '<div style="display:flex;align-items:center;gap:10px">' +
+          '<div style="font-size:10px;color:#888">' +
+            '<i class="ti ti-user" style="font-size:10px"></i> '+(r.from||'-')+
+          '</div>' +
+          '<div style="font-size:10px;color:#aaa">Confidence: '+conf+'%</div>' +
+          '<div style="font-size:10px;color:#aaa">Urgency: '+(r.urgency_score||0)+'/6</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+  document.getElementById('total-scan-results').style.display = 'block';
+}
+
+// ── From total scan → go to individual scan ───────
+function viewEmailIndividual(index){
+  selectedEmail = fetchedEmails[index];
+  switchEmailMode('individual');
+  showSelectedEmail();
+}
+
+// ── INDIVIDUAL SCAN — Render email list ───────────
+function renderIndividualList(){
+  const container = document.getElementById('individual-email-list');
+  const items     = document.getElementById('individual-list-items');
+  const manual    = document.getElementById('individual-manual');
+
+  items.innerHTML = fetchedEmails.map((em, i) =>
+    '<div onclick="selectEmail('+i+')" ' +
+      'style="display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:8px;background:#f8f9ff;border:0.5px solid #e0e2ef;margin-bottom:5px;cursor:pointer;transition:all .2s" ' +
+      'onmouseover="this.style.background=\'#EEEDFE\';this.style.borderColor=\'#AFA9EC\'" ' +
+      'onmouseout="this.style.background=\'#f8f9ff\';this.style.borderColor=\'#e0e2ef\'">' +
+      '<div style="width:28px;height:28px;border-radius:7px;background:#EEEDFE;display:flex;align-items:center;justify-content:center;color:#534AB7;font-size:13px;flex-shrink:0">' +
+        '<i class="ti ti-mail"></i>' +
+      '</div>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="font-size:11px;font-weight:500;color:#26215C;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' +
+          (em.subject||'No Subject') +
+        '</div>' +
+        '<div style="font-size:10px;color:#888;margin-top:1px">' +
+          '<i class="ti ti-user" style="font-size:10px"></i> ' + (em.from||'Unknown') +
+          ' &nbsp;·&nbsp; ' +
+          '<i class="ti ti-clock" style="font-size:10px"></i> ' + (em.date||'') +
+        '</div>' +
+      '</div>' +
+      '<i class="ti ti-chevron-right" style="color:#aaa;font-size:14px"></i>' +
+    '</div>'
+  ).join('');
+
+  container.style.display = 'block';
+  manual.style.display    = 'block';
+  document.getElementById('selected-email-view').style.display = 'none';
+}
+
+// ── INDIVIDUAL SCAN — Select one email ────────────
+function selectEmail(index){
+  selectedEmail = fetchedEmails[index];
+  showSelectedEmail();
+}
+
+function showSelectedEmail(){
+  if(!selectedEmail) return;
+
+  document.getElementById('individual-email-list').style.display = 'none';
+  document.getElementById('individual-manual').style.display     = 'none';
+  document.getElementById('selected-email-view').style.display   = 'block';
+  document.getElementById('individual-scan-result').style.display = 'none';
+
+  document.getElementById('sel-subject').textContent = selectedEmail.subject || 'No Subject';
+  document.getElementById('sel-from').textContent    = selectedEmail.from    || 'Unknown';
+  document.getElementById('sel-date').textContent    = selectedEmail.date    || '';
+  document.getElementById('sel-body').textContent    = selectedEmail.body    || 'No body content';
+}
+
+function backToIndividualList(){
+  document.getElementById('selected-email-view').style.display   = 'none';
+  document.getElementById('individual-email-list').style.display = 'block';
+  document.getElementById('individual-manual').style.display     = 'block';
+  selectedEmail = null;
+}
+
+// ── INDIVIDUAL SCAN — Deep scan selected email ────
+async function runIndividualEmailScan(){
+  if(!selectedEmail){
+    alert('Please select an email first!');
+    return;
+  }
+
+  const btn = document.getElementById('btn-individual-scan');
+  btn.classList.add('run');
+  btn.innerHTML = '<i class="ti ti-loader"></i> Analyzing...';
+
+  try{
+    const res  = await fetch('/scan/email/individual', {
+      method  : 'POST',
+      headers : {'Content-Type':'application/json'},
+      body    : JSON.stringify({
+        subject            : selectedEmail.subject     || '',
+        body               : selectedEmail.body        || '',
+        from               : selectedEmail.from        || '',
+        date               : selectedEmail.date        || '',
+        attachment_results : selectedEmail.attachments || []
+      })
+    });
+    const data = await res.json();
+
+    btn.classList.remove('run');
+    btn.innerHTML = '<i class="ti ti-microscope"></i> Run Deep Scan on This Email';
+
+    showIndividualResult(data);
+
+  }catch(e){
+    btn.classList.remove('run');
+    btn.innerHTML = '<i class="ti ti-microscope"></i> Run Deep Scan on This Email';
+    alert('Error: ' + e.message);
+  }
+}
+
+// ── INDIVIDUAL SCAN — Manual paste deep scan ──────
+async function runManualIndividualScan(){
+  const sub  = document.getElementById('ind-sub').value.trim();
+  const from = document.getElementById('ind-from-inp').value.trim();
+  const body = document.getElementById('ind-body').value.trim();
+
+  if(!sub && !body){
+    alert('Please enter subject or body!');
+    return;
+  }
+
+  selectedEmail = {subject: sub, from: from, body: body, date: ''};
+  document.getElementById('individual-email-list').style.display = 'none';
+  document.getElementById('individual-manual').style.display     = 'none';
+  document.getElementById('selected-email-view').style.display   = 'block';
+
+  document.getElementById('sel-subject').textContent = sub  || 'No Subject';
+  document.getElementById('sel-from').textContent    = from || 'Unknown';
+  document.getElementById('sel-date').textContent    = 'Manual input';
+  document.getElementById('sel-body').textContent    = body || '';
+
+  runIndividualEmailScan();
+}
+
+// ── INDIVIDUAL SCAN — Show deep result ────────────
+function showIndividualResult(data){
+  const lv   = data.threat_level || 'LOW';
+  const conf = Math.round(data.confidence || 0);
+  const tc   = lv==='HIGH'?'#FCEBEB':lv==='MEDIUM'?'#FAEEDA':'#EAF3DE';
+  const bc   = lv==='HIGH'?'#F09595':lv==='MEDIUM'?'#FAC775':'#C0DD97';
+  const fc   = lv==='HIGH'?'#A32D2D':lv==='MEDIUM'?'#854F0B':'#3B6D11';
+  const ic   = lv==='HIGH'?'ti-alert-triangle':lv==='MEDIUM'?'ti-alert-circle':'ti-check';
+  const emoji= lv==='HIGH'?'🚨':lv==='MEDIUM'?'⚠️':'✅';
+
+  const breakdown = (data.breakdown||[]).map(b => {
+    const bbc = b.risk==='HIGH'?'#FCEBEB':b.risk==='MEDIUM'?'#FAEEDA':'#EAF3DE';
+    const bbc2= b.risk==='HIGH'?'#F09595':b.risk==='MEDIUM'?'#FAC775':'#C0DD97';
+    const bfc = b.risk==='HIGH'?'#A32D2D':b.risk==='MEDIUM'?'#854F0B':'#3B6D11';
+    return '<div style="background:'+bbc+';border:0.5px solid '+bbc2+';border-radius:7px;padding:7px;margin-bottom:5px">' +
+      '<div style="font-size:11px;font-weight:600;color:'+bfc+';margin-bottom:3px;display:flex;align-items:center;justify-content:space-between">' +
+        '<span>'+b.category+'</span>' +
+        '<span style="font-size:10px;background:'+bfc+';color:#fff;padding:1px 7px;border-radius:10px">'+b.risk+'</span>' +
+      '</div>' +
+      '<div style="font-size:10px;color:#555">Found: '+b.words.join(', ')+'</div>' +
+    '</div>';
+  }).join('') || '<div style="font-size:11px;color:#3B6D11;text-align:center;padding:10px">No suspicious patterns found!</div>';
+
+  const recs = (data.recommendation||[]).map(r =>
+    '<div style="display:flex;align-items:flex-start;gap:6px;padding:4px 0;font-size:11px;color:#555;border-bottom:0.5px solid #f0f0f8">' +
+      '<i class="ti ti-point-filled" style="color:#534AB7;font-size:12px;flex-shrink:0;margin-top:1px"></i>'+r+
+    '</div>'
+  ).join('');
+
+  document.getElementById('individual-scan-result').innerHTML =
+    '<div style="background:'+tc+';border:0.5px solid '+bc+';border-radius:10px;padding:12px;margin-bottom:10px">' +
+      '<div style="font-size:15px;font-weight:600;color:'+fc+';margin-bottom:4px">'+emoji+' '+lv+' RISK</div>' +
+      '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px">' +
+        '<div style="background:rgba(255,255,255,0.6);border-radius:7px;padding:7px;text-align:center">' +
+          '<div style="font-size:16px;font-weight:600;color:'+fc+'">'+conf+'%</div>' +
+          '<div style="font-size:10px;color:#888">Confidence</div>' +
+        '</div>' +
+        '<div style="background:rgba(255,255,255,0.6);border-radius:7px;padding:7px;text-align:center">' +
+          '<div style="font-size:16px;font-weight:600;color:'+fc+'">'+(data.urgency_score||0)+'</div>' +
+          '<div style="font-size:10px;color:#888">Urgency</div>' +
+        '</div>' +
+        '<div style="background:rgba(255,255,255,0.6);border-radius:7px;padding:7px;text-align:center">' +
+          '<div style="font-size:16px;font-weight:600;color:'+fc+'">'+(data.threat_score||0)+'</div>' +
+          '<div style="font-size:10px;color:#888">Threats</div>' +
+        '</div>' +
+        '<div style="background:rgba(255,255,255,0.6);border-radius:7px;padding:7px;text-align:center">' +
+          '<div style="font-size:16px;font-weight:600;color:'+fc+'">'+(data.suspicious_links||[]).length+'</div>' +
+          '<div style="font-size:10px;color:#888">Bad Links</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div style="font-size:11px;font-weight:600;color:#26215C;margin-bottom:6px"><i class="ti ti-list" style="color:#534AB7"></i> Detailed Breakdown</div>' +
+    breakdown +
+    '<div style="font-size:11px;font-weight:600;color:#26215C;margin:10px 0 6px"><i class="ti ti-shield-check" style="color:#534AB7"></i> Recommendations</div>' +
+    '<div style="background:#f8f9ff;border-radius:8px;padding:8px;border:0.5px solid #e0e2ef">'+recs+'</div>';
+
+  document.getElementById('individual-scan-result').style.display = 'block';
+  addNotification(lv + ' RISK email detected!', lv);
+}
+// ══════════════════════════════════════════════════
+// VOICE FEATURES — PhishShield AI
+// ══════════════════════════════════════════════════
+
+const synth    = window.speechSynthesis;
+let recognition = null;
+let lastScanResult = null;
+let isListening    = false;
+let isSpeaking     = false;
+
+// ── Initialize Speech Recognition ────────────────
+function initVoiceRecognition(){
+  if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)){
+    setVoiceText('Voice recognition not supported in this browser. Use Chrome!');
+    return false;
+  }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang        = 'en-US';
+  recognition.continuous  = false;
+  recognition.interimResults = true;
+
+  recognition.onstart = () => {
+    isListening = true;
+    setVoiceText('Listening... Speak now!');
+    setWaveActive(true);
+    document.getElementById('voice-listen-btn').classList.add('listening');
+    document.getElementById('voice-listen-btn').innerHTML =
+      '<i class="ti ti-microphone"></i>Listening...';
+  };
+
+  recognition.onresult = (event) => {
+    const transcript = Array.from(event.results)
+      .map(r => r[0].transcript).join('').toLowerCase().trim();
+    setVoiceText('Heard: "' + transcript + '"');
+    if(event.results[0].isFinal) processVoiceCommand(transcript);
+  };
+
+  recognition.onerror = (event) => {
+    setVoiceText('Error: ' + event.error + '. Try again!');
+    stopListening();
+  };
+
+  recognition.onend = () => {
+    stopListening();
+  };
+
+  return true;
+}
+
+function stopListening(){
+  isListening = false;
+  setWaveActive(false);
+  const btn = document.getElementById('voice-listen-btn');
+  btn.classList.remove('listening');
+  btn.innerHTML = '<i class="ti ti-microphone"></i>Voice Command';
+}
+
+// ── Voice Panel Toggle ────────────────────────────
+function toggleVoicePanel(){
+  const panel = document.getElementById('voice-panel');
+  const fab   = document.getElementById('voice-fab-btn');
+  const isOpen = panel.classList.contains('open');
+  panel.classList.toggle('open');
+  fab.innerHTML = isOpen
+    ? '<i class="ti ti-microphone"></i>'
+    : '<i class="ti ti-x"></i>';
+}
+
+// ── Start Voice Command ───────────────────────────
+function startVoiceCommand(){
+  if(isSpeaking){ stopSpeaking(); return; }
+  if(!recognition && !initVoiceRecognition()) return;
+  if(isListening){ recognition.stop(); return; }
+  try{ recognition.start(); }
+  catch(e){ initVoiceRecognition(); recognition.start(); }
+}
+
+// ── Process Voice Command ─────────────────────────
+async function processVoiceCommand(transcript){
+  setVoiceText('Processing: "' + transcript + '"...');
+
+  // Scan URL command
+  if(transcript.includes('scan url') || transcript.includes('check url') || transcript.includes('analyze url')){
+    const url = extractURL(transcript);
+    if(url){
+      setVoiceText('Scanning URL: ' + url);
+      speak('Scanning URL ' + url + '. Please wait.');
+      document.getElementById('url-in').value = url;
+      switchScan('url', document.querySelectorAll('.stab')[0]);
+      await doScan('url');
+    } else {
+      setVoiceText('Please say the URL after "Scan URL"');
+      speak('Please say the URL you want to scan after the command Scan URL');
+    }
+    return;
+  }
+
+  // Scan email command
+  if(transcript.includes('scan email') || transcript.includes('check email') || transcript.includes('analyze email')){
+    const subject = transcript.replace(/scan email|check email|analyze email/g,'').trim();
+    if(subject){
+      setVoiceText('Scanning email: ' + subject);
+      speak('Scanning email with subject ' + subject);
+      document.getElementById('em-sub').value = subject;
+      switchScan('email', document.querySelectorAll('.stab')[1]);
+      await doScan('email');
+    } else {
+      setVoiceText('Please say the email subject after "Scan Email"');
+      speak('Please say the email subject after the command Scan Email');
+    }
+    return;
+  }
+
+  // Read last result
+  if(transcript.includes('read report') || transcript.includes('read result') || transcript.includes('what is the result')){
+    readLastResult();
+    return;
+  }
+
+  // Dashboard stats
+  if(transcript.includes('dashboard') || transcript.includes('stats') || transcript.includes('statistics') || transcript.includes('summary')){
+    readDashboardStats();
+    return;
+  }
+
+  // High risk threats
+  if(transcript.includes('high risk') || transcript.includes('threats') || transcript.includes('dangerous')){
+    speak('Checking for high risk threats in your recent scans.');
+    setVoiceText('Reading high risk threats...');
+    return;
+  }
+
+  // Help command
+  if(transcript.includes('help') || transcript.includes('commands') || transcript.includes('what can you do')){
+    speak('You can say: Scan URL followed by the URL. Scan Email followed by subject. Read Report to hear results. Dashboard Stats for a summary.');
+    setVoiceText('Available commands shown in panel below');
+    return;
+  }
+
+  // Not understood
+  setVoiceText('Not understood: "' + transcript + '". Try: Scan URL, Scan Email, Read Report');
+  speak('Sorry, I did not understand that command. Try saying Scan URL, Scan Email, or Read Report.');
+}
+
+// ── Extract URL from transcript ───────────────────
+function extractURL(transcript){
+  const urlMatch = transcript.match(/https?:\/\/[^\s]+/);
+  if(urlMatch) return urlMatch[0];
+  const afterCmd = transcript.replace(/scan url|check url|analyze url/i,'').trim();
+  if(afterCmd && afterCmd.includes('.')) return 'http://' + afterCmd.replace(/\s+/g,'');
+  return null;
+}
+
+// ── Speak text ────────────────────────────────────
+function speak(text, onEnd){
+  if(!text) return;
+  stopSpeaking();
+  const utterance   = new SpeechSynthesisUtterance(text);
+  utterance.rate    = 0.95;
+  utterance.pitch   = 1.0;
+  utterance.volume  = 1.0;
+  utterance.lang    = 'en-US';
+
+  // Try to use a good voice
+  const voices = synth.getVoices();
+  const preferred = voices.find(v =>
+    v.name.includes('Google') ||
+    v.name.includes('Natural') ||
+    v.lang === 'en-US'
+  );
+  if(preferred) utterance.voice = preferred;
+
+  utterance.onstart = () => {
+    isSpeaking = true;
+    setWaveActive(true);
+    document.getElementById('voice-fab-btn').classList.add('speaking');
+  };
+
+  utterance.onend = () => {
+    isSpeaking = false;
+    setWaveActive(false);
+    document.getElementById('voice-fab-btn').classList.remove('speaking');
+    if(onEnd) onEnd();
+  };
+
+  synth.speak(utterance);
+}
+
+function stopSpeaking(){
+  synth.cancel();
+  isSpeaking = false;
+  setWaveActive(false);
+  document.getElementById('voice-fab-btn').classList.remove('speaking');
+}
+
+// ── Read last scan result ─────────────────────────
+function readLastResult(){
+  if(!lastScanResult){
+    speak('No scan result available. Please scan a URL or email first.');
+    setVoiceText('No scan result yet. Please do a scan first!');
+    return;
+  }
+  const r    = lastScanResult;
+
+  if(r.valid === false){
+    const text = r.message || 'Invalid URL. Please enter a valid URL.';
+    setVoiceText('Reading: ' + text.substring(0,60) + '...');
+    speak(text);
+    showVoiceAlert(text, 'INVALID');
+    return;
+  }
+
+  const lv   = r.threat_level || 'LOW';
+  const conf = Math.round(r.confidence || 0);
+  let text   = '';
+
+  if(lv === 'HIGH'){
+    text = 'Warning! High Risk threat detected! Confidence level is ' + conf +
+           ' percent. This is a dangerous ' + (r.type||'URL') +
+           '. Do not click this link or interact with this content. ' +
+           'Report it to your security team immediately.';
+  } else if(lv === 'MEDIUM'){
+    text = 'Caution! Medium Risk detected. Confidence level is ' + conf +
+           ' percent. This ' + (r.type||'URL') +
+           ' shows some suspicious patterns. Proceed with caution and verify before clicking.';
+  } else {
+    text = 'Good news! This ' + (r.type||'URL') +
+           ' appears to be safe. Confidence level is ' + conf +
+           ' percent. No major threats detected.';
+  }
+
+  setVoiceText('Reading: ' + text.substring(0,60) + '...');
+  speak(text);
+  showVoiceAlert(text, lv);
+}
+
+// ── Read dashboard stats ──────────────────────────
+function readDashboardStats(){
+  const v1 = document.getElementById('mv1');
+  const v2 = document.getElementById('mv2');
+  const v3 = document.getElementById('mv3');
+  const v4 = document.getElementById('mv4');
+
+  const total   = v1 ? v1.textContent : '0';
+  const threats = v2 ? v2.textContent : '0';
+  const acc     = v3 ? v3.textContent : '0';
+  const clones  = v4 ? v4.textContent : '0';
+
+  const text =
+    'PhishShield AI Dashboard Summary. ' +
+    'Total URLs scanned: ' + total + '. ' +
+    'Total threats detected: ' + threats + '. ' +
+    'Model accuracy: ' + acc + '. ' +
+    'Clone sites found: ' + clones + '. ' +
+    'Your system is actively monitoring for cyber threats.';
+
+  setVoiceText('Reading dashboard stats...');
+  speak(text);
+}
+
+// ── Voice Alert after scan ────────────────────────
+function voiceAlertAfterScan(data, type){
+  lastScanResult      = {...data, type};
+
+  if(data.valid === false){
+    const alertText = data.message || 'Invalid URL. Please enter a valid URL.';
+    speak(alertText);
+    setVoiceText(alertText);
+    showVoiceAlert(alertText, 'INVALID');
+    return;
+  }
+
+  const lv   = data.threat_level || 'LOW';
+  const conf = Math.round(data.confidence || 0);
+  let alertText = '';
+
+  if(lv === 'HIGH'){
+    alertText =
+      'Warning! High Risk ' + type + ' detected! ' +
+      'Confidence ' + conf + ' percent. ' +
+      'Do not proceed with this ' + type + '!';
+  } else if(lv === 'MEDIUM'){
+    alertText =
+      'Caution! Medium Risk ' + type + ' detected. ' +
+      'Confidence ' + conf + ' percent. Be careful!';
+  } else {
+    alertText = type + ' is safe. Confidence ' + conf + ' percent.';
+  }
+
+  speak(alertText);
+  setVoiceText(alertText);
+  showVoiceAlert(alertText, lv);
+}
+
+// ── Show voice alert toast ────────────────────────
+function showVoiceAlert(text, level){
+  const wrap = document.getElementById('voice-alert-wrap');
+  const tc   = level==='HIGH'?'toast-h':level==='MEDIUM'?'toast-m':level==='INVALID'?'toast-h':'toast-l';
+  const icon = level==='HIGH'?'ti-volume':'ti-volume';
+  const t    = document.createElement('div');
+  t.className = 'toast ' + tc;
+  t.style.cssText = 'min-width:240px;display:flex;align-items:flex-start;gap:8px';
+  t.innerHTML =
+    '<i class="ti ti-volume" style="font-size:15px;flex-shrink:0;margin-top:1px"></i>' +
+    '<span style="font-size:11px;line-height:1.4">' + text.substring(0,100) + '...</span>';
+  wrap.appendChild(t);
+  setTimeout(()=>{
+    t.style.opacity='0';
+    t.style.transform='translateX(50px)';
+    setTimeout(()=>t.remove(), 300);
+  }, 5000);
+}
+
+// ── UI Helpers ────────────────────────────────────
+function setVoiceText(text){
+  const el = document.getElementById('voice-text');
+  if(el) el.textContent = text;
+}
+
+function setWaveActive(active){
+  const waves = document.getElementById('voice-waves');
+  if(waves) waves.classList.toggle('idle', !active);
+}
+
+// ── Hook into showResult to trigger voice alert ───
+const _origShowResultVoice = showResult;
+showResult = function(type, rb, data){
+  _origShowResultVoice(type, rb, data);
+  voiceAlertAfterScan(data, type);
+};
+
+// ── Load voices on page load ──────────────────────
+window.speechSynthesis.onvoiceschanged = () => {
+  window.speechSynthesis.getVoices();
+};
+
+// ── Add voice mic button to topbar ───────────────
+window.addEventListener('load', () => {
+  initVoiceRecognition();
+  // Welcome message
+  setTimeout(()=>{
+    speak('Welcome to PhishShield AI. Your cybersecurity dashboard is ready.');
+  }, 1500);
+});
+function sendSuggestion(text){
+  document.getElementById('chat-inp').value=text;
+  sendMessage();
+}
+</script>
+</body>
+</html>

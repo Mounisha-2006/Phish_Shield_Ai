@@ -1,0 +1,9 @@
+Flask
+Werkzeug
+pandas
+scikit-learn
+tldextract
+imap-tools
+oletools
+pypdf
+shap

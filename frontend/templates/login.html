@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PhishShield AI - Login</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Segoe UI',sans-serif;background:#0f0e17;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+    .particles{position:fixed;inset:0;pointer-events:none;z-index:0}
+    .particle{position:absolute;border-radius:50%;animation:float linear infinite;opacity:0.15}
+    @keyframes float{0%{transform:translateY(100vh);opacity:0}10%{opacity:0.15}90%{opacity:0.15}100%{transform:translateY(-100px);opacity:0}}
+    .card{position:relative;z-index:1;display:grid;grid-template-columns:260px 1fr;width:700px;min-height:560px;border-radius:20px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.6)}
+    .left{background:#26215C;padding:28px 24px;display:flex;flex-direction:column;gap:18px;position:relative;overflow:hidden}
+    .scan-line{position:absolute;width:100%;height:1px;background:linear-gradient(90deg,transparent,rgba(175,169,236,0.6),transparent);animation:scan 3s linear infinite;top:0;left:0;pointer-events:none}
+    @keyframes scan{0%{top:0%;opacity:0}10%{opacity:1}90%{opacity:1}100%{top:100%;opacity:0}}
+    .brand{display:flex;align-items:center;gap:9px}
+    .logo{width:34px;height:34px;background:#534AB7;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#CECBF6;font-size:17px;flex-shrink:0}
+    .brand-name{font-size:15px;font-weight:600;color:#CECBF6}
+    .brand-sub{font-size:10px;color:#7F77DD;margin-top:1px}
+    .shield-wrap{display:flex;justify-content:center;padding:6px 0}
+    .left-title{font-size:15px;font-weight:600;color:#fff;line-height:1.4;text-align:center}
+    .left-sub{font-size:11px;color:#AFA9EC;line-height:1.6;text-align:center;margin-top:-10px}
+    .feat-list{display:flex;flex-direction:column;gap:8px}
+    .feat{display:flex;align-items:center;gap:8px}
+    .feat-dot{width:24px;height:24px;border-radius:7px;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;color:#AFA9EC;font-size:13px;flex-shrink:0}
+    .feat-text{font-size:11px;color:#AFA9EC;line-height:1.4}
+    .left-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+    .lst{background:rgba(255,255,255,0.06);border-radius:8px;padding:8px 4px;text-align:center;border:1px solid rgba(255,255,255,0.08)}
+    .lst-val{font-size:14px;font-weight:600;color:#CECBF6}
+    .lst-lbl{font-size:9px;color:#7F77DD;margin-top:2px}
+    .right{background:#1a1a2e;padding:28px 24px;display:flex;flex-direction:column;justify-content:center}
+    .toggle{display:flex;background:#0f0e17;border-radius:10px;padding:3px;margin-bottom:18px}
+    .ttab{flex:1;padding:8px;text-align:center;font-size:12px;font-weight:500;border-radius:8px;cursor:pointer;color:#6b7280;transition:all .25s;border:none;background:transparent;font-family:'Segoe UI',sans-serif}
+    .ttab.active{background:#26215C;color:#CECBF6}
+    .sec-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;background:rgba(83,74,183,0.2);color:#AFA9EC;font-size:10px;font-weight:500;margin-bottom:12px;border:1px solid rgba(83,74,183,0.3)}
+    .ftitle{font-size:17px;font-weight:600;color:#fff;margin-bottom:2px}
+    .fsub{font-size:12px;color:#6b7280;margin-bottom:16px}
+    .lbl{font-size:11px;color:#9ca3af;margin-bottom:5px;display:flex;align-items:center;gap:4px}
+    .iw{position:relative;margin-bottom:10px}
+    .iw .ic{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#4b5563;font-size:14px;pointer-events:none}
+    .ifield{width:100%;padding:9px 10px 9px 30px;font-size:12px;border:1px solid #2d2d44;border-radius:10px;background:#0f0e17;color:#fff;outline:none;transition:all .2s;font-family:'Segoe UI',sans-serif}
+    .ifield:focus{border-color:#534AB7;box-shadow:0 0 0 3px rgba(83,74,183,0.15)}
+    .ifield.bad{border-color:#E24B4A}
+    .itoggle{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#4b5563;background:none;border:none;cursor:pointer;font-size:14px}
+    .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .str-bar{height:3px;border-radius:2px;background:#2d2d44;margin-top:5px;overflow:hidden}
+    .str-fill{height:100%;width:0%;border-radius:2px;transition:all .4s}
+    .str-lbl{font-size:10px;margin-top:3px;color:#6b7280}
+    .rem-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    .chk{display:flex;align-items:center;gap:5px;font-size:11px;color:#9ca3af}
+    .chk input{accent-color:#534AB7}
+    .forgot{font-size:11px;color:#534AB7;background:none;border:none;cursor:pointer;font-family:'Segoe UI',sans-serif}
+    .sbtn{width:100%;padding:10px;background:#534AB7;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px;font-family:'Segoe UI',sans-serif}
+    .sbtn:hover{background:#3C3489;transform:translateY(-1px)}
+    .sbtn.loading{background:#7F77DD;cursor:not-allowed;transform:none}
+    .div{display:flex;align-items:center;gap:8px;margin:12px 0;color:#4b5563;font-size:11px}
+    .div::before,.div::after{content:'';flex:1;height:1px;background:#2d2d44}
+    .soc{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .sbtn2{padding:8px;border:1px solid #2d2d44;border-radius:10px;background:transparent;color:#9ca3af;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .2s;font-family:'Segoe UI',sans-serif}
+    .sbtn2:hover{background:#26215C;color:#CECBF6;border-color:#534AB7}
+    .sw{text-align:center;font-size:11px;color:#6b7280;margin-top:12px}
+    .swl{color:#534AB7;background:none;border:none;cursor:pointer;font-family:'Segoe UI',sans-serif;font-size:11px}
+    .err{font-size:10px;color:#ef4444;margin-top:-7px;margin-bottom:7px;display:none}
+    .err.show{display:block}
+    .success{display:none;flex-direction:column;align-items:center;text-align:center;padding:20px 0}
+    .success.show{display:flex}
+    .sicon-wrap{position:relative;width:60px;height:60px;margin-bottom:14px}
+    .pulse-ring{position:absolute;inset:0;border-radius:50%;border:2px solid #639922;animation:ring 1.5s ease-out infinite}
+    @keyframes ring{0%{transform:scale(1);opacity:.8}100%{transform:scale(2);opacity:0}}
+    .sicon{width:60px;height:60px;border-radius:50%;background:#1a3a2a;display:flex;align-items:center;justify-content:center;font-size:26px;color:#22c55e;animation:pop .4s ease}
+    @keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+    .dots{display:flex;gap:6px;justify-content:center;margin-top:12px}
+    .dot{width:8px;height:8px;border-radius:50%;background:#2d2d44;transition:background .3s}
+    .dot.on{background:#534AB7}
+  </style>
+</head>
+<body>
+
+<div class="particles" id="particles"></div>
+
+<div class="card">
+  <div class="left">
+    <div class="scan-line"></div>
+
+    <div class="brand">
+      <div class="logo"><i class="ti ti-shield-check"></i></div>
+      <div>
+        <div class="brand-name">PhishShield AI</div>
+        <div class="brand-sub">Cyber Threat Detection</div>
+      </div>
+    </div>
+
+    <div class="shield-wrap">
+      <svg width="88" height="88" viewBox="0 0 90 90" fill="none">
+        <path d="M45 8 L72 18 L72 45 C72 60 60 72 45 78 C30 72 18 60 18 45 L18 18 Z" fill="#3C3489" stroke="#AFA9EC" stroke-width="1"/>
+        <path d="M45 16 L66 24 L66 45 C66 57 56 67 45 72 C34 67 24 57 24 45 L24 24 Z" fill="#534AB7" stroke="#7F77DD" stroke-width="0.5"/>
+        <circle cx="45" cy="42" r="10" fill="none" stroke="#CECBF6" stroke-width="1.5" stroke-dasharray="3 2"/>
+        <circle cx="45" cy="42" r="5" fill="#CECBF6" opacity="0.9"/>
+        <line x1="45" y1="28" x2="45" y2="32" stroke="#AFA9EC" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="45" y1="52" x2="45" y2="56" stroke="#AFA9EC" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="31" y1="42" x2="35" y2="42" stroke="#AFA9EC" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="55" y1="42" x2="59" y2="42" stroke="#AFA9EC" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="45" cy="42" r="18" fill="none" stroke="#7F77DD" stroke-width="0.5" opacity="0.4"/>
+        <circle id="rdot" cx="63" cy="42" r="2.5" fill="#CECBF6"/>
+      </svg>
+    </div>
+
+    <div class="left-title">AI-Driven Cyber Threat Detection</div>
+    <div class="left-sub">Protecting you from phishing URLs, AI emails and cloned websites</div>
+
+    <div class="feat-list">
+      <div class="feat"><div class="feat-dot"><i class="ti ti-link"></i></div><div class="feat-text">URL scanner — 96% ML accuracy</div></div>
+      <div class="feat"><div class="feat-dot"><i class="ti ti-mail"></i></div><div class="feat-text">Email analyzer using NLP</div></div>
+      <div class="feat"><div class="feat-dot"><i class="ti ti-copy"></i></div><div class="feat-text">Clone website real-time detection</div></div>
+      <div class="feat"><div class="feat-dot"><i class="ti ti-file-text"></i></div><div class="feat-text">PDF security report generator</div></div>
+    </div>
+
+    <div class="left-stats">
+      <div class="lst"><div class="lst-val">1.2K</div><div class="lst-lbl">Scans</div></div>
+      <div class="lst"><div class="lst-val">96%</div><div class="lst-lbl">Accuracy</div></div>
+      <div class="lst"><div class="lst-val">347</div><div class="lst-lbl">Blocked</div></div>
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="toggle">
+      <button class="ttab active" id="tab-si" onclick="sw('si')">Sign in</button>
+      <button class="ttab" id="tab-su" onclick="sw('su')">Sign up</button>
+    </div>
+
+    <!-- SIGN IN -->
+    <div id="frm-si">
+      <div class="sec-badge"><i class="ti ti-lock" style="font-size:11px"></i> Secure login</div>
+      <div class="ftitle">Welcome back</div>
+      <div class="fsub">Sign in to your PhishShield account</div>
+
+      <div class="lbl"><i class="ti ti-mail" style="font-size:12px"></i> Email address</div>
+      <div class="iw">
+        <i class="ti ti-mail ic"></i>
+        <input class="ifield" id="si-em" type="email" placeholder="you@example.com" oninput="clr('si-em-e','si-em')">
+      </div>
+      <div class="err" id="si-em-e">Please enter a valid email</div>
+
+      <div class="lbl"><i class="ti ti-lock" style="font-size:12px"></i> Password</div>
+      <div class="iw">
+        <i class="ti ti-lock ic"></i>
+        <input class="ifield" id="si-pw" type="password" placeholder="Enter your password" oninput="clr('si-pw-e','si-pw')">
+        <button class="itoggle" onclick="tpwd('si-pw',this)"><i class="ti ti-eye"></i></button>
+      </div>
+      <div class="err" id="si-pw-e">Password is required</div>
+
+      <div class="rem-row">
+        <label class="chk"><input type="checkbox"> Remember me</label>
+        <button class="forgot">Forgot password?</button>
+      </div>
+      <button class="sbtn" id="si-btn" onclick="doSI()">
+        <i class="ti ti-login"></i> Sign in
+      </button>
+      <div class="div">or continue with</div>
+      <div class="soc">
+        <button class="sbtn2"><i class="ti ti-brand-google"></i> Google</button>
+        <button class="sbtn2"><i class="ti ti-brand-github"></i> GitHub</button>
+      </div>
+      <div class="sw">No account? <button class="swl" onclick="sw('su')">Create one</button></div>
+    </div>
+
+    <!-- SIGN UP -->
+    <div id="frm-su" style="display:none">
+      <div class="sec-badge"><i class="ti ti-shield-check" style="font-size:11px"></i> Free forever</div>
+      <div class="ftitle">Create account</div>
+      <div class="fsub">Join PhishShield AI today</div>
+
+      <div class="row2">
+        <div>
+          <div class="lbl">First name</div>
+          <div class="iw"><i class="ti ti-user ic"></i><input class="ifield" id="su-fn" placeholder="John" oninput="clr('su-n-e','su-fn')"></div>
+        </div>
+        <div>
+          <div class="lbl">Last name</div>
+          <div class="iw"><i class="ti ti-user ic"></i><input class="ifield" id="su-ln" placeholder="Doe"></div>
+        </div>
+      </div>
+      <div class="err" id="su-n-e">Please enter your name</div>
+
+      <div class="lbl"><i class="ti ti-mail" style="font-size:12px"></i> Email address</div>
+      <div class="iw">
+        <i class="ti ti-mail ic"></i>
+        <input class="ifield" id="su-em" type="email" placeholder="you@example.com" oninput="clr('su-em-e','su-em')">
+      </div>
+      <div class="err" id="su-em-e">Please enter a valid email</div>
+
+      <div class="lbl"><i class="ti ti-lock" style="font-size:12px"></i> Password</div>
+      <div class="iw">
+        <i class="ti ti-lock ic"></i>
+        <input class="ifield" id="su-pw" type="password" placeholder="Create a strong password" oninput="chkStr(this.value)">
+        <button class="itoggle" onclick="tpwd('su-pw',this)"><i class="ti ti-eye"></i></button>
+      </div>
+      <div class="str-bar"><div class="str-fill" id="sf"></div></div>
+      <div class="str-lbl" id="sl">Enter a password</div>
+      <div class="err" id="su-pw-e">Minimum 6 characters</div>
+
+      <div class="lbl" style="margin-top:8px"><i class="ti ti-lock" style="font-size:12px"></i> Confirm password</div>
+      <div class="iw">
+        <i class="ti ti-lock ic"></i>
+        <input class="ifield" id="su-cf" type="password" placeholder="Re-enter your password" oninput="clr('su-cf-e','su-cf')">
+      </div>
+      <div class="err" id="su-cf-e">Passwords do not match</div>
+
+      <label class="chk" style="margin:8px 0 4px">
+        <input type="checkbox" id="su-tc" style="accent-color:#534AB7">
+        I agree to <span style="color:#534AB7">Terms of Service</span>
+      </label>
+      <div class="err" id="su-tc-e">Please accept the terms</div>
+
+      <button class="sbtn" id="su-btn" style="margin-top:8px" onclick="doSU()">
+        <i class="ti ti-user-plus"></i> Create account
+      </button>
+      <div class="sw">Have account? <button class="swl" onclick="sw('si')">Sign in</button></div>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="success" id="succ">
+      <div class="sicon-wrap">
+        <div class="pulse-ring"></div>
+        <div class="sicon"><i class="ti ti-check"></i></div>
+      </div>
+      <div style="font-size:17px;font-weight:600;color:#fff;margin-bottom:4px" id="succ-t">Success!</div>
+      <div style="font-size:12px;color:#6b7280;margin-bottom:14px">Redirecting to your dashboard...</div>
+      <div class="dots">
+        <div class="dot on" id="d1"></div>
+        <div class="dot" id="d2"></div>
+        <div class="dot" id="d3"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const colors=['#534AB7','#3C3489','#7F77DD','#AFA9EC','#26215C'];
+const par=document.getElementById('particles');
+for(let i=0;i<20;i++){
+  const d=document.createElement('div');
+  d.className='particle';
+  const sz=Math.random()*5+3;
+  d.style.cssText='width:'+sz+'px;height:'+sz+'px;background:'+colors[Math.floor(Math.random()*colors.length)]+';left:'+Math.random()*100+'%;animation-duration:'+(Math.random()*12+8)+'s;animation-delay:'+Math.random()*8+'s;bottom:-20px';
+  par.appendChild(d);
+}
+
+let angle=0;
+const rdot=document.getElementById('rdot');
+setInterval(()=>{
+  angle+=0.05;
+  rdot.setAttribute('cx',(45+18*Math.cos(angle)).toFixed(1));
+  rdot.setAttribute('cy',(42+18*Math.sin(angle)).toFixed(1));
+},50);
+
+function sw(t){
+  document.getElementById('tab-si').classList.toggle('active',t==='si');
+  document.getElementById('tab-su').classList.toggle('active',t==='su');
+  document.getElementById('frm-si').style.display=t==='si'?'block':'none';
+  document.getElementById('frm-su').style.display=t==='su'?'block':'none';
+  document.getElementById('succ').classList.remove('show');
+}
+function tpwd(id,btn){
+  const i=document.getElementById(id);
+  const s=i.type==='password';
+  i.type=s?'text':'password';
+  btn.innerHTML=s?'<i class="ti ti-eye-off"></i>':'<i class="ti ti-eye"></i>';
+}
+function clr(e,f){
+  document.getElementById(e).classList.remove('show');
+  document.getElementById(f).classList.remove('bad');
+}
+function shw(e,f){
+  document.getElementById(e).classList.add('show');
+  if(f)document.getElementById(f).classList.add('bad');
+}
+function chkStr(v){
+  const f=document.getElementById('sf');
+  const l=document.getElementById('sl');
+  if(!v){f.style.width='0%';l.textContent='Enter a password';l.style.color='#6b7280';return;}
+  let s=0;
+  if(v.length>=6)s++;if(v.length>=10)s++;
+  if(/[A-Z]/.test(v))s++;if(/[0-9]/.test(v))s++;if(/[^A-Za-z0-9]/.test(v))s++;
+  const c=[
+    {w:'20%',bg:'#ef4444',l:'Very weak'},
+    {w:'40%',bg:'#f97316',l:'Weak'},
+    {w:'60%',bg:'#eab308',l:'Fair'},
+    {w:'80%',bg:'#84cc16',l:'Strong'},
+    {w:'100%',bg:'#22c55e',l:'Very strong'}
+  ];
+  const cfg=c[Math.min(s-1,4)]||c[0];
+  f.style.width=cfg.w;f.style.background=cfg.bg;l.textContent=cfg.l;
+}
+function showSuccess(title){
+  document.getElementById('frm-si').style.display='none';
+  document.getElementById('frm-su').style.display='none';
+  document.getElementById('succ-t').textContent=title;
+  document.getElementById('succ').classList.add('show');
+  let d=0;
+  const iv=setInterval(()=>{
+    d++;
+    if(d<=2)document.getElementById('d'+(d+1)).classList.add('on');
+    else clearInterval(iv);
+  },500);
+  setTimeout(()=>window.location.href='/dashboard',2500);
+}
+async function doSI(){
+  const em=document.getElementById('si-em').value.trim();
+  const pw=document.getElementById('si-pw').value;
+  let ok=true;
+  if(!em||!em.includes('@')){shw('si-em-e','si-em');ok=false;}
+  if(!pw){shw('si-pw-e','si-pw');ok=false;}
+  if(!ok)return;
+  const btn=document.getElementById('si-btn');
+  btn.classList.add('loading');
+  btn.innerHTML='<i class="ti ti-loader"></i> Signing in...';
+  const res=await fetch('/signin',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({email:em,password:pw})
+  });
+  const data=await res.json();
+  if(data.success){
+    showSuccess('Welcome back!');
+  } else {
+    btn.classList.remove('loading');
+    btn.innerHTML='<i class="ti ti-login"></i> Sign in';
+    alert(data.message);
+  }
+}
+async function doSU(){
+  const fn=document.getElementById('su-fn').value.trim();
+  const ln=document.getElementById('su-ln').value.trim();
+  const em=document.getElementById('su-em').value.trim();
+  const pw=document.getElementById('su-pw').value;
+  const cf=document.getElementById('su-cf').value;
+  const tc=document.getElementById('su-tc').checked;
+  let ok=true;
+  if(!fn){shw('su-n-e','su-fn');ok=false;}
+  if(!em||!em.includes('@')){shw('su-em-e','su-em');ok=false;}
+  if(pw.length<6){shw('su-pw-e','su-pw');ok=false;}
+  if(pw!==cf){shw('su-cf-e','su-cf');ok=false;}
+  if(!tc){shw('su-tc-e',null);ok=false;}
+  if(!ok)return;
+  const btn=document.getElementById('su-btn');
+  btn.classList.add('loading');
+  btn.innerHTML='<i class="ti ti-loader"></i> Creating account...';
+  const res=await fetch('/signup',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({fname:fn,lname:ln,email:em,password:pw})
+  });
+  const data=await res.json();
+  if(data.success){
+    showSuccess('Account created!');
+  } else {
+    btn.classList.remove('loading');
+    btn.innerHTML='<i class="ti ti-user-plus"></i> Create account';
+    alert(data.message);
+  }
+}
+</script>
+</body>
+</html>

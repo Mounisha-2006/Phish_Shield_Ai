@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PhishShield AI - Analytics</title>
+<link rel="stylesheet" href="https://unpkg.com/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',sans-serif;background:#f0f2fa;min-height:100vh;color:#333}
+
+  .topbar{background:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ececf5}
+  .brand{display:flex;align-items:center;gap:10px}
+  .logo{width:32px;height:32px;background:#534AB7;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px}
+  .bname{font-size:15px;font-weight:600;color:#26215C}
+  .back-btn{font-size:12px;color:#534AB7;background:#EEEDFE;border:none;padding:7px 14px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:'Segoe UI',sans-serif;font-weight:500;transition:all .2s}
+  .back-btn:hover{background:#dedaf9}
+
+  .wrap{max-width:1200px;margin:0 auto;padding:24px}
+
+  .page-title{font-size:20px;font-weight:600;color:#26215C;margin-bottom:4px}
+  .page-sub{font-size:13px;color:#999;margin-bottom:22px}
+
+  .summary-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+  .summary-card{background:#fff;border-radius:14px;padding:18px;border:1px solid #ececf5}
+  .summary-label{font-size:11px;color:#999;font-weight:500;display:flex;align-items:center;gap:5px;margin-bottom:8px}
+  .summary-value{font-size:26px;font-weight:700;color:#26215C}
+  .summary-value.danger{color:#C0392B}
+  .summary-value.safe{color:#3B6D11}
+
+  .charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+  .chart-card{background:#fff;border-radius:14px;padding:18px;border:1px solid #ececf5}
+  .chart-card.full{grid-column:1/-1}
+  .chart-title{font-size:13px;font-weight:600;color:#26215C;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+  .chart-box{position:relative;height:260px}
+  .chart-box.tall{height:300px}
+
+  .empty-state{text-align:center;padding:40px 20px;color:#bbb;font-size:13px}
+  .empty-state i{font-size:32px;display:block;margin-bottom:8px;color:#ddd}
+
+  .brand-list{display:flex;flex-direction:column;gap:8px}
+  .brand-row{display:flex;align-items:center;gap:10px;font-size:12px}
+  .brand-name{width:90px;color:#555;font-weight:500;text-transform:capitalize;flex-shrink:0}
+  .brand-bar-wrap{flex:1;height:18px;background:#f0f0f7;border-radius:6px;overflow:hidden}
+  .brand-bar{height:100%;background:linear-gradient(90deg,#534AB7,#7B6FE0);border-radius:6px}
+  .brand-count{font-size:11px;color:#999;width:24px;text-align:right;flex-shrink:0}
+
+  .loading{display:flex;align-items:center;justify-content:center;height:200px;color:#aaa;font-size:13px;gap:8px}
+  .spin{animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  @media (max-width:800px){
+    .summary-row{grid-template-columns:repeat(2,1fr)}
+    .charts-grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="logo"><i class="ti ti-shield-check"></i></div>
+    <div class="bname">PhishShield AI</div>
+  </div>
+  <button class="back-btn" onclick="window.location.href='/dashboard'">
+    <i class="ti ti-arrow-left"></i> Back to Dashboard
+  </button>
+</div>
+
+<div class="wrap">
+  <div class="page-title">Analytics</div>
+  <div class="page-sub">Trends and insights from your scan history</div>
+
+  <div id="loading-state" class="loading"><i class="ti ti-loader spin"></i> Loading analytics...</div>
+
+  <div id="content" style="display:none">
+
+    <div class="summary-row">
+      <div class="summary-card">
+        <div class="summary-label"><i class="ti ti-shield-search"></i> Total Scans</div>
+        <div class="summary-value" id="sum-total">0</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label"><i class="ti ti-alert-triangle"></i> Threats Found</div>
+        <div class="summary-value danger" id="sum-threats">0</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label"><i class="ti ti-flame"></i> High Risk</div>
+        <div class="summary-value danger" id="sum-high">0</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label"><i class="ti ti-circle-check"></i> Safe Scans</div>
+        <div class="summary-value safe" id="sum-low">0</div>
+      </div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title"><i class="ti ti-chart-pie"></i> Threat Level Breakdown</div>
+        <div class="chart-box" id="threat-chart-box">
+          <canvas id="threatChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-title"><i class="ti ti-chart-bar"></i> Scan Type Distribution</div>
+        <div class="chart-box" id="type-chart-box">
+          <canvas id="typeChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card full">
+        <div class="chart-title"><i class="ti ti-trending-up"></i> Scan Activity (Last 14 Days)</div>
+        <div class="chart-box tall" id="trend-chart-box">
+          <canvas id="trendChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card full">
+        <div class="chart-title"><i class="ti ti-target"></i> Top Targeted Brands</div>
+        <div id="brand-list-box">
+          <div class="brand-list" id="brand-list"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+async function loadAnalytics(){
+  try{
+    const res = await fetch('/analytics/data');
+    const data = await res.json();
+
+    if(data.error){
+      document.getElementById('loading-state').innerHTML =
+        '<i class="ti ti-alert-circle"></i> Could not load analytics: ' + data.error;
+      return;
+    }
+
+    document.getElementById('loading-state').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+
+    // Summary cards
+    document.getElementById('sum-total').textContent   = data.total_scans;
+    document.getElementById('sum-threats').textContent = data.threats_found;
+    document.getElementById('sum-high').textContent    = data.threat_breakdown.HIGH || 0;
+    document.getElementById('sum-low').textContent     = data.threat_breakdown.LOW  || 0;
+
+    renderThreatChart(data.threat_breakdown);
+    renderTypeChart(data.type_breakdown);
+    renderTrendChart(data.trend);
+    renderBrandList(data.top_brands);
+
+  }catch(e){
+    document.getElementById('loading-state').innerHTML =
+      '<i class="ti ti-alert-circle"></i> Error loading analytics: ' + e.message;
+  }
+}
+
+function showEmptyIfNoData(boxId, hasData, message){
+  if(!hasData){
+    document.getElementById(boxId).innerHTML =
+      '<div class="empty-state"><i class="ti ti-chart-line"></i>' + message + '</div>';
+    return true;
+  }
+  return false;
+}
+
+function renderThreatChart(breakdown){
+  const total = (breakdown.HIGH||0) + (breakdown.MEDIUM||0) + (breakdown.LOW||0);
+  if(showEmptyIfNoData('threat-chart-box', total > 0, 'No scans yet — run a scan to see data here')) return;
+
+  new Chart(document.getElementById('threatChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['High Risk', 'Medium Risk', 'Low Risk / Safe'],
+      datasets: [{
+        data: [breakdown.HIGH||0, breakdown.MEDIUM||0, breakdown.LOW||0],
+        backgroundColor: ['#E24B4A', '#BA7517', '#639922'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 14 } } }
+    }
+  });
+}
+
+function renderTypeChart(breakdown){
+  const labels = Object.keys(breakdown);
+  const values = Object.values(breakdown);
+  if(showEmptyIfNoData('type-chart-box', labels.length > 0, 'No scans yet — run a scan to see data here')) return;
+
+  new Chart(document.getElementById('typeChart'), {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: values,
+        backgroundColor: '#534AB7',
+        borderRadius: 6,
+        maxBarThickness: 50
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#f0f0f7' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+}
+
+function renderTrendChart(trend){
+  if(showEmptyIfNoData('trend-chart-box', trend.length > 0, 'No scan activity in the last 14 days yet')) return;
+
+  const labels = trend.map(t => {
+    const d = new Date(t.day);
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  });
+
+  new Chart(document.getElementById('trendChart'), {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Total Scans',
+          data: trend.map(t => t.total),
+          borderColor: '#534AB7',
+          backgroundColor: 'rgba(83,74,183,0.08)',
+          fill: true,
+          tension: 0.35,
+          pointRadius: 3
+        },
+        {
+          label: 'High Risk Detected',
+          data: trend.map(t => t.high),
+          borderColor: '#E24B4A',
+          backgroundColor: 'rgba(226,75,74,0.08)',
+          fill: true,
+          tension: 0.35,
+          pointRadius: 3
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 14 } } },
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#f0f0f7' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+}
+
+function renderBrandList(brands){
+  const container = document.getElementById('brand-list');
+  if(!brands || brands.length === 0){
+    container.innerHTML = '<div class="empty-state"><i class="ti ti-target"></i>No brand impersonation attempts detected yet</div>';
+    return;
+  }
+  const maxCount = Math.max(...brands.map(b => b.count));
+  container.innerHTML = brands.map(b => `
+    <div class="brand-row">
+      <div class="brand-name">${b.brand}</div>
+      <div class="brand-bar-wrap"><div class="brand-bar" style="width:${(b.count/maxCount*100)}%"></div></div>
+      <div class="brand-count">${b.count}</div>
+    </div>
+  `).join('');
+}
+
+loadAnalytics();
+</script>
+
+</body>
+</html>

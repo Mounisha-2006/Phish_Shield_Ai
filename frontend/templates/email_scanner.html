@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PhishShield AI - Email Scanner</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Segoe UI',sans-serif;background:#f0f2fa;min-height:100vh}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;background:rgba(255,255,255,0.95);border-bottom:0.5px solid #e0e2ef}
+    .brand{display:flex;align-items:center;gap:9px}
+    .logo{width:32px;height:32px;background:#534AB7;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px}
+    .bname{font-size:15px;font-weight:600;color:#26215C}
+    .bsub{font-size:10px;color:#7F77DD}
+    .back-btn{padding:6px 12px;border:0.5px solid #e0e2ef;border-radius:7px;background:#fff;color:#534AB7;font-size:11px;cursor:pointer;font-family:'Segoe UI',sans-serif;display:flex;align-items:center;gap:4px;text-decoration:none}
+    .back-btn:hover{background:#EEEDFE}
+    .container{max-width:900px;margin:20px auto;padding:0 16px}
+    .page-title{font-size:20px;font-weight:600;color:#26215C;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+    .page-sub{font-size:12px;color:#888;margin-bottom:20px}
+    .mode-tabs{display:flex;gap:10px;margin-bottom:20px}
+    .mode-tab{flex:1;padding:14px;border-radius:12px;border:0.5px solid #e0e2ef;background:#fff;cursor:pointer;transition:all .2s;text-align:center}
+    .mode-tab.active{background:#534AB7;border-color:#534AB7}
+    .mode-tab-icon{font-size:22px;margin-bottom:6px;display:block}
+    .mode-tab-title{font-size:13px;font-weight:600;color:#26215C}
+    .mode-tab.active .mode-tab-title{color:#fff}
+    .mode-tab-desc{font-size:11px;color:#888;margin-top:3px}
+    .mode-tab.active .mode-tab-desc{color:rgba(255,255,255,0.8)}
+    .mode-tab:hover:not(.active){background:#EEEDFE;border-color:#AFA9EC}
+    .card{background:#fff;border:0.5px solid #e0e2ef;border-radius:12px;padding:16px;margin-bottom:14px}
+    .card-title{font-size:13px;font-weight:600;color:#26215C;display:flex;align-items:center;gap:6px;margin-bottom:12px}
+    .inp{width:100%;padding:8px 10px;font-size:12px;border:0.5px solid #e0e2ef;border-radius:8px;background:#f8f9ff;color:#26215C;outline:none;transition:border .2s;font-family:'Segoe UI',sans-serif;margin-bottom:7px}
+    .inp:focus{border-color:#534AB7;background:#fff}
+    textarea.inp{resize:none;height:80px}
+    .sbtn{padding:9px 18px;background:#534AB7;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;font-family:'Segoe UI',sans-serif}
+    .sbtn:hover{background:#3C3489}
+    .sbtn.run{background:#AFA9EC;cursor:not-allowed}
+    .sbtn-outline{padding:9px 18px;background:transparent;color:#534AB7;border:0.5px solid #534AB7;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;font-family:'Segoe UI',sans-serif}
+    .sbtn-outline:hover{background:#EEEDFE}
+    .email-list{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+    .email-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;border:0.5px solid #e0e2ef;background:#f8f9ff;cursor:pointer;transition:all .2s}
+    .email-item:hover{border-color:#AFA9EC;background:#EEEDFE}
+    .email-item.selected{border-color:#534AB7;background:#EEEDFE}
+    .email-check{width:16px;height:16px;accent-color:#534AB7;cursor:pointer;flex-shrink:0}
+    .email-info{flex:1;min-width:0}
+    .email-subject{font-size:12px;font-weight:500;color:#26215C;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .email-from{font-size:10px;color:#888;margin-top:2px}
+    .email-date{font-size:10px;color:#aaa;flex-shrink:0}
+    .tag{padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600}
+    .tag-h{background:#FCEBEB;color:#A32D2D}
+    .tag-m{background:#FAEEDA;color:#854F0B}
+    .tag-l{background:#EAF3DE;color:#3B6D11}
+    .tag-p{background:#EEEDFE;color:#534AB7}
+    .pb{height:3px;background:#e0e2ef;border-radius:2px;margin:10px 0;overflow:hidden;display:none}
+    .pf{height:100%;width:0%;background:linear-gradient(90deg,#534AB7,#AFA9EC);border-radius:2px;transition:width .08s}
+    .result-section{display:none;animation:ri .3s ease}
+    @keyframes ri{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+    .bulk-table{width:100%;border-collapse:collapse;font-size:11px}
+    .bulk-table th{padding:8px 10px;text-align:left;background:#f8f9ff;color:#555;font-weight:600;border-bottom:0.5px solid #e0e2ef}
+    .bulk-table td{padding:8px 10px;border-bottom:0.5px solid #f0f0f8;color:#26215C}
+    .bulk-table tr:hover td{background:#f8f9ff}
+    .bulk-table tr:last-child td{border-bottom:none}
+    .conf-bar-wrap{width:80px;height:5px;background:#f0f0f8;border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle;margin-right:5px}
+    .conf-bar{height:100%;border-radius:3px}
+    .deep-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+    .deep-card{background:#f8f9ff;border-radius:8px;padding:10px;border:0.5px solid #e0e2ef}
+    .deep-card-title{font-size:10px;color:#888;margin-bottom:4px}
+    .deep-card-val{font-size:14px;font-weight:600;color:#26215C}
+    .breakdown-item{padding:8px 10px;border-radius:8px;margin-bottom:6px;border:0.5px solid}
+    .bi-h{background:#FCEBEB;border-color:#F09595}
+    .bi-m{background:#FAEEDA;border-color:#FAC775}
+    .bi-l{background:#EAF3DE;border-color:#C0DD97}
+    .bi-title{font-size:11px;font-weight:600;margin-bottom:4px;display:flex;align-items:center;justify-content:space-between}
+    .bi-words{font-size:10px;color:#555}
+    .rec-item{display:flex;align-items:flex-start;gap:6px;padding:5px 0;font-size:11px;color:#555;border-bottom:0.5px solid #f0f0f8}
+    .rec-item:last-child{border:none}
+    .rec-icon{color:#534AB7;font-size:12px;flex-shrink:0;margin-top:1px}
+    .alert-box{padding:10px 14px;border-radius:8px;margin-bottom:10px;display:flex;align-items:flex-start;gap:8px;font-size:11px}
+    .alert-h{background:#FCEBEB;border:0.5px solid #F09595;color:#A32D2D}
+    .alert-m{background:#FAEEDA;border:0.5px solid #FAC775;color:#854F0B}
+    .alert-l{background:#EAF3DE;border:0.5px solid #C0DD97;color:#3B6D11}
+    .summary-banner{padding:14px 16px;border-radius:10px;margin-bottom:14px;display:flex;align-items:center;gap:12px}
+    .sb-h{background:#FCEBEB;border:0.5px solid #F09595}
+    .sb-m{background:#FAEEDA;border:0.5px solid #FAC775}
+    .sb-l{background:#EAF3DE;border:0.5px solid #C0DD97}
+    .sb-icon{font-size:24px}
+    .sb-title{font-size:14px;font-weight:600}
+    .sb-sub{font-size:11px;margin-top:2px}
+    .empty-state{text-align:center;padding:30px;color:#aaa}
+    .empty-state i{font-size:32px;display:block;margin-bottom:8px}
+    .empty-state p{font-size:12px}
+    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+    .stat-box{background:#fff;border-radius:8px;padding:10px;text-align:center;border:0.5px solid #e0e2ef}
+    .stat-val{font-size:18px;font-weight:600}
+    .stat-lbl{font-size:10px;color:#aaa;margin-top:2px}
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="logo"><i class="ti ti-shield-check"></i></div>
+    <div>
+      <div class="bname">PhishShield AI</div>
+      <div class="bsub">Email Security Scanner</div>
+    </div>
+  </div>
+  <a href="/dashboard" class="back-btn">
+    <i class="ti ti-arrow-left"></i> Back to Dashboard
+  </a>
+</div>
+
+<div class="container">
+  <div class="page-title">
+    <i class="ti ti-mail-opened" style="color:#534AB7"></i>
+    Email Threat Scanner
+  </div>
+  <div class="page-sub">Choose Bulk Scan to quickly scan all emails, or Individual Scan for deep analysis of a specific email</div>
+
+  <!-- MODE SELECTION -->
+  <div class="mode-tabs">
+    <div class="mode-tab active" id="tab-bulk" onclick="switchMode('bulk')">
+      <span class="mode-tab-icon">🔄</span>
+      <div class="mode-tab-title">Bulk Scan</div>
+      <div class="mode-tab-desc">Scan all emails at once — quickly identify suspicious ones</div>
+    </div>
+    <div class="mode-tab" id="tab-individual" onclick="switchMode('individual')">
+      <span class="mode-tab-icon">🔍</span>
+      <div class="mode-tab-title">Individual Scan</div>
+      <div class="mode-tab-desc">Select one email for deep detailed analysis</div>
+    </div>
+  </div>
+
+  <!-- BULK SCAN PAGE -->
+  <div id="page-bulk">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-mail-opened" style="color:#534AB7"></i>Add Emails for Bulk Scan</div>
+
+      <div style="background:#EEEDFE;border-radius:8px;padding:10px;margin-bottom:10px;border:0.5px solid #AFA9EC">
+        <div style="font-size:11px;font-weight:600;color:#26215C;margin-bottom:8px;display:flex;align-items:center;gap:5px">
+          <i class="ti ti-inbox" style="color:#534AB7"></i>
+          Paste Multiple Emails
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <div>
+            <div style="font-size:10px;color:#888;margin-bottom:4px">Email Subject</div>
+            <input class="inp" id="bulk-sub" placeholder="Email subject...">
+          </div>
+          <div>
+            <div style="font-size:10px;color:#888;margin-bottom:4px">From (Sender)</div>
+            <input class="inp" id="bulk-from" placeholder="sender@example.com">
+          </div>
+        </div>
+        <textarea class="inp" id="bulk-body" placeholder="Paste email body here..." style="height:70px;margin-bottom:8px"></textarea>
+        <button class="sbtn-outline" onclick="addEmailToList()">
+          <i class="ti ti-plus"></i>Add to Queue
+        </button>
+      </div>
+
+      <div id="email-queue">
+        <div class="empty-state" id="queue-empty">
+          <i class="ti ti-inbox"></i>
+          <p>No emails added yet.<br>Add emails above to scan them all at once!</p>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:10px" id="bulk-actions" style="display:none">
+        <button class="sbtn" id="btn-bulk-scan" onclick="runBulkScan()">
+          <i class="ti ti-scan"></i>Scan All Emails
+        </button>
+        <button class="sbtn-outline" onclick="clearQueue()">
+          <i class="ti ti-trash"></i>Clear All
+        </button>
+      </div>
+    </div>
+
+    <div class="pb" id="pb-bulk"><div class="pf" id="pf-bulk"></div></div>
+
+    <div class="result-section" id="bulk-results">
+      <div class="stats-row" id="bulk-stats"></div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-table" style="color:#534AB7"></i>Bulk Scan Results</div>
+        <div style="overflow-x:auto">
+          <table class="bulk-table" id="bulk-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Subject</th>
+                <th>From</th>
+                <th>Threat Level</th>
+                <th>Confidence</th>
+                <th>Urgency</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="bulk-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INDIVIDUAL SCAN PAGE -->
+  <div id="page-individual" style="display:none">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-search" style="color:#534AB7"></i>Individual Email Deep Analysis</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div>
+          <div style="font-size:10px;color:#888;margin-bottom:4px">Email Subject *</div>
+          <input class="inp" id="ind-sub" placeholder="Enter email subject...">
+        </div>
+        <div>
+          <div style="font-size:10px;color:#888;margin-bottom:4px">From (Sender)</div>
+          <input class="inp" id="ind-from" placeholder="sender@example.com">
+        </div>
+      </div>
+      <div style="font-size:10px;color:#888;margin-bottom:4px">Email Body *</div>
+      <textarea class="inp" id="ind-body" placeholder="Paste complete email body here for deep analysis..." style="height:120px"></textarea>
+      <button class="sbtn" id="btn-ind-scan" onclick="runIndividualScan()">
+        <i class="ti ti-microscope"></i>Run Deep Analysis
+      </button>
+    </div>
+
+    <div class="pb" id="pb-ind"><div class="pf" id="pf-ind"></div></div>
+
+    <div class="result-section" id="individual-results">
+
+      <!-- Summary Banner -->
+      <div class="summary-banner" id="ind-banner">
+        <span class="sb-icon" id="ind-icon"></span>
+        <div>
+          <div class="sb-title" id="ind-title"></div>
+          <div class="sb-sub" id="ind-sub-text"></div>
+        </div>
+        <div style="margin-left:auto;text-align:right">
+          <div style="font-size:20px;font-weight:600" id="ind-conf"></div>
+          <div style="font-size:10px;color:#888">Confidence</div>
+        </div>
+      </div>
+
+      <div class="deep-grid">
+        <div class="card">
+          <div class="card-title"><i class="ti ti-alert-triangle" style="color:#534AB7"></i>Threat Scores</div>
+          <div class="deep-grid" style="margin-bottom:0">
+            <div class="deep-card">
+              <div class="deep-card-title">Urgency Score</div>
+              <div class="deep-card-val" id="ind-urgency">0</div>
+            </div>
+            <div class="deep-card">
+              <div class="deep-card-title">Threat Score</div>
+              <div class="deep-card-val" id="ind-threat">0</div>
+            </div>
+            <div class="deep-card">
+              <div class="deep-card-title">Money Score</div>
+              <div class="deep-card-val" id="ind-money">0</div>
+            </div>
+            <div class="deep-card">
+              <div class="deep-card-title">Total Score</div>
+              <div class="deep-card-val" id="ind-total">0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><i class="ti ti-info-circle" style="color:#534AB7"></i>Email Info</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="font-size:11px;color:#555"><b>From:</b> <span id="ind-from-res">-</span></div>
+            <div style="font-size:11px;color:#555"><b>Impersonal:</b> <span id="ind-impersonal">-</span></div>
+            <div style="font-size:11px;color:#555"><b>Sender mismatch:</b> <span id="ind-mismatch">-</span></div>
+            <div style="font-size:11px;color:#555"><b>Has HTML:</b> <span id="ind-html">-</span></div>
+            <div style="font-size:11px;color:#555"><b>Links found:</b> <span id="ind-links-count">-</span></div>
+            <div style="font-size:11px;color:#555"><b>Suspicious links:</b> <span id="ind-sus-links">-</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="ti ti-list" style="color:#534AB7"></i>Detailed Breakdown</div>
+        <div id="ind-breakdown"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="ti ti-shield-check" style="color:#534AB7"></i>Security Recommendations</div>
+        <div id="ind-recommendations"></div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+let emailQueue = [];
+let currentMode = 'bulk';
+
+function switchMode(mode){
+  currentMode = mode;
+  document.getElementById('tab-bulk').classList.toggle('active', mode==='bulk');
+  document.getElementById('tab-individual').classList.toggle('active', mode==='individual');
+  document.getElementById('page-bulk').style.display       = mode==='bulk'       ? 'block' : 'none';
+  document.getElementById('page-individual').style.display = mode==='individual' ? 'block' : 'none';
+}
+
+// ── BULK SCAN ─────────────────────────────────────────
+function addEmailToList(){
+  const sub  = document.getElementById('bulk-sub').value.trim();
+  const from = document.getElementById('bulk-from').value.trim();
+  const body = document.getElementById('bulk-body').value.trim();
+
+  if(!sub && !body){
+    alert('Please enter at least a subject or body!');
+    return;
+  }
+
+  emailQueue.push({subject: sub, from: from, body: body});
+
+  document.getElementById('bulk-sub').value  = '';
+  document.getElementById('bulk-from').value = '';
+  document.getElementById('bulk-body').value = '';
+
+  renderQueue();
+}
+
+function renderQueue(){
+  const container = document.getElementById('email-queue');
+  const empty     = document.getElementById('queue-empty');
+  const actions   = document.getElementById('bulk-actions');
+
+  if(emailQueue.length === 0){
+    container.innerHTML = '<div class="empty-state" id="queue-empty"><i class="ti ti-inbox"></i><p>No emails added yet.<br>Add emails above to scan them all at once!</p></div>';
+    actions.style.display = 'none';
+    return;
+  }
+
+  actions.style.display = 'flex';
+  container.innerHTML = emailQueue.map((em, i) =>
+    '<div class="email-item" id="qitem-'+i+'">' +
+      '<div class="email-info">' +
+        '<div class="email-subject">'+(em.subject||'No Subject')+'</div>' +
+        '<div class="email-from"><i class="ti ti-user" style="font-size:10px"></i> '+(em.from||'Unknown sender')+'</div>' +
+      '</div>' +
+      '<span class="tag tag-p">Queued</span>' +
+      '<button onclick="removeFromQueue('+i+')" style="background:none;border:none;color:#aaa;cursor:pointer;font-size:14px"><i class="ti ti-x"></i></button>' +
+    '</div>'
+  ).join('');
+}
+
+function removeFromQueue(i){
+  emailQueue.splice(i, 1);
+  renderQueue();
+}
+
+function clearQueue(){
+  emailQueue = [];
+  renderQueue();
+  document.getElementById('bulk-results').style.display = 'none';
+}
+
+async function runBulkScan(){
+  if(emailQueue.length === 0){
+    alert('Please add at least one email!');
+    return;
+  }
+
+  const btn = document.getElementById('btn-bulk-scan');
+  const pb  = document.getElementById('pb-bulk');
+  const pf  = document.getElementById('pf-bulk');
+
+  btn.classList.add('run');
+  btn.innerHTML = '<i class="ti ti-loader"></i> Scanning '+emailQueue.length+' emails...';
+  pb.style.display = 'block';
+  pf.style.width = '0%';
+
+  let w = 0;
+  const iv = setInterval(()=>{w=Math.min(w+Math.random()*12,94);pf.style.width=w+'%';},150);
+
+  try{
+    const res  = await fetch('/scan/email/bulk', {
+      method  : 'POST',
+      headers : {'Content-Type':'application/json'},
+      body    : JSON.stringify({emails: emailQueue})
+    });
+    const data = await res.json();
+
+    clearInterval(iv);
+    pf.style.width = '100%';
+
+    setTimeout(()=>{
+      pb.style.display = 'none';
+      btn.classList.remove('run');
+      btn.innerHTML = '<i class="ti ti-scan"></i> Scan All Emails';
+      showBulkResults(data.results);
+    }, 300);
+
+  }catch(e){
+    clearInterval(iv);
+    btn.classList.remove('run');
+    btn.innerHTML = '<i class="ti ti-scan"></i> Scan All Emails';
+    alert('Error: '+e.message);
+  }
+}
+
+function showBulkResults(results){
+  const high   = results.filter(r=>r.threat_level==='HIGH').length;
+  const medium = results.filter(r=>r.threat_level==='MEDIUM').length;
+  const low    = results.filter(r=>r.threat_level==='LOW').length;
+
+  document.getElementById('bulk-stats').innerHTML =
+    '<div class="stat-box"><div class="stat-val" style="color:#534AB7">'+results.length+'</div><div class="stat-lbl">Total Scanned</div></div>'+
+    '<div class="stat-box"><div class="stat-val" style="color:#A32D2D">'+high+'</div><div class="stat-lbl">High Risk</div></div>'+
+    '<div class="stat-box"><div class="stat-val" style="color:#854F0B">'+medium+'</div><div class="stat-lbl">Medium Risk</div></div>'+
+    '<div class="stat-box"><div class="stat-val" style="color:#3B6D11">'+low+'</div><div class="stat-lbl">Safe</div></div>';
+
+  const tbody = document.getElementById('bulk-tbody');
+  tbody.innerHTML = results.map((r, i) => {
+    const lv  = r.threat_level;
+    const tc  = lv==='HIGH'?'tag-h':lv==='MEDIUM'?'tag-m':'tag-l';
+    const bc  = lv==='HIGH'?'#E24B4A':lv==='MEDIUM'?'#BA7517':'#639922';
+    const conf = Math.round(r.confidence||0);
+    return '<tr>'+
+      '<td>'+(i+1)+'</td>'+
+      '<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(r.subject||'No Subject')+'</td>'+
+      '<td style="color:#888">'+(r.from||'-')+'</td>'+
+      '<td><span class="tag '+tc+'">'+lv+'</span></td>'+
+      '<td>'+
+        '<div class="conf-bar-wrap"><div class="conf-bar" style="width:'+conf+'%;background:'+bc+'"></div></div>'+
+        conf+'%'+
+      '</td>'+
+      '<td>'+(r.urgency_score||0)+'/6</td>'+
+      '<td>'+
+        '<button onclick="deepScanFromBulk('+i+')" style="padding:3px 8px;background:#EEEDFE;color:#534AB7;border:0.5px solid #AFA9EC;border-radius:5px;font-size:10px;cursor:pointer;font-family:\'Segoe UI\',sans-serif">'+
+          '<i class="ti ti-search"></i> Deep Scan'+
+        '</button>'+
+      '</td>'+
+    '</tr>';
+  }).join('');
+
+  document.getElementById('bulk-results').style.display = 'block';
+}
+
+function deepScanFromBulk(index){
+  const em = emailQueue[index];
+  document.getElementById('ind-sub').value  = em.subject || '';
+  document.getElementById('ind-from').value = em.from    || '';
+  document.getElementById('ind-body').value = em.body    || '';
+  switchMode('individual');
+  runIndividualScan();
+}
+
+// ── INDIVIDUAL SCAN ───────────────────────────────────
+async function runIndividualScan(){
+  const sub  = document.getElementById('ind-sub').value.trim();
+  const from = document.getElementById('ind-from').value.trim();
+  const body = document.getElementById('ind-body').value.trim();
+
+  if(!sub && !body){
+    alert('Please enter subject or body!');
+    return;
+  }
+
+  const btn = document.getElementById('btn-ind-scan');
+  const pb  = document.getElementById('pb-ind');
+  const pf  = document.getElementById('pf-ind');
+
+  btn.classList.add('run');
+  btn.innerHTML = '<i class="ti ti-loader"></i> Analyzing...';
+  pb.style.display = 'block';
+  pf.style.width   = '0%';
+  document.getElementById('individual-results').style.display = 'none';
+
+  let w = 0;
+  const iv = setInterval(()=>{w=Math.min(w+Math.random()*10,94);pf.style.width=w+'%';},120);
+
+  try{
+    const res  = await fetch('/scan/email/individual', {
+      method  : 'POST',
+      headers : {'Content-Type':'application/json'},
+      body    : JSON.stringify({subject:sub, body:body, from:from})
+    });
+    const data = await res.json();
+
+    clearInterval(iv);
+    pf.style.width = '100%';
+
+    setTimeout(()=>{
+      pb.style.display = 'none';
+      btn.classList.remove('run');
+      btn.innerHTML = '<i class="ti ti-microscope"></i> Run Deep Analysis';
+      showIndividualResults(data);
+    }, 300);
+
+  }catch(e){
+    clearInterval(iv);
+    btn.classList.remove('run');
+    btn.innerHTML = '<i class="ti ti-microscope"></i> Run Deep Analysis';
+    alert('Error: '+e.message);
+  }
+}
+
+function showIndividualResults(data){
+  const lv   = data.threat_level || 'LOW';
+  const conf = Math.round(data.confidence || 0);
+
+  // Banner
+  const bannerClass = lv==='HIGH'?'sb-h':lv==='MEDIUM'?'sb-m':'sb-l';
+  const banner      = document.getElementById('ind-banner');
+  banner.className  = 'summary-banner ' + bannerClass;
+
+  document.getElementById('ind-icon').textContent  = lv==='HIGH'?'🚨':lv==='MEDIUM'?'⚠️':'✅';
+  document.getElementById('ind-title').textContent = lv+' RISK EMAIL DETECTED';
+  document.getElementById('ind-sub-text').textContent = lv==='HIGH'
+    ? 'This email shows strong signs of phishing. Do NOT click any links!'
+    : lv==='MEDIUM'
+    ? 'This email has some suspicious patterns. Proceed with caution.'
+    : 'This email appears to be safe.';
+  document.getElementById('ind-conf').textContent = conf + '%';
+
+  // Scores
+  document.getElementById('ind-urgency').textContent = data.urgency_score || 0;
+  document.getElementById('ind-threat').textContent  = data.threat_score  || 0;
+  document.getElementById('ind-money').textContent   = data.money_score   || 0;
+  document.getElementById('ind-total').textContent   = data.total_score   || 0;
+
+  // Info
+  document.getElementById('ind-from-res').textContent    = data.sender       || 'Not provided';
+  document.getElementById('ind-impersonal').textContent  = data.impersonal   ? '⚠️ Yes' : '✅ No';
+  document.getElementById('ind-mismatch').textContent    = data.sender_mismatch > 0 ? '⚠️ Yes ('+data.sender_mismatch+')' : '✅ No';
+  document.getElementById('ind-html').textContent        = data.has_html     ? 'Yes' : 'No';
+  document.getElementById('ind-links-count').textContent = (data.all_links   || []).length;
+  document.getElementById('ind-sus-links').textContent   = (data.suspicious_links || []).length > 0
+    ? '⚠️ ' + data.suspicious_links.join(', ')
+    : '✅ None found';
+
+  // Breakdown
+  const bd = document.getElementById('ind-breakdown');
+  if(!data.breakdown || data.breakdown.length === 0){
+    bd.innerHTML = '<div class="empty-state"><i class="ti ti-check" style="color:#3B6D11"></i><p>No suspicious patterns detected!</p></div>';
+  } else {
+    bd.innerHTML = data.breakdown.map(b => {
+      const bc = b.risk==='HIGH'?'bi-h':b.risk==='MEDIUM'?'bi-m':'bi-l';
+      const fc = b.risk==='HIGH'?'#A32D2D':b.risk==='MEDIUM'?'#854F0B':'#3B6D11';
+      return '<div class="breakdown-item '+bc+'">'+
+        '<div class="bi-title">'+
+          '<span style="color:'+fc+'"><i class="ti ti-alert-circle" style="font-size:12px"></i> '+b.category+'</span>'+
+          '<span style="font-size:10px;background:'+fc+';color:#fff;padding:1px 7px;border-radius:10px">'+b.risk+'</span>'+
+        '</div>'+
+        '<div class="bi-words">Found: '+b.words.join(', ')+'</div>'+
+      '</div>';
+    }).join('');
+  }
+
+  // Recommendations
+  const rec = document.getElementById('ind-recommendations');
+  rec.innerHTML = (data.recommendation || []).map(r =>
+    '<div class="rec-item"><i class="ti ti-point-filled rec-icon"></i>'+r+'</div>'
+  ).join('');
+
+  document.getElementById('individual-results').style.display = 'block';
+  document.getElementById('individual-results').scrollIntoView({behavior:'smooth'});
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PhishShield AI - Dashboard</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Segoe UI',sans-serif;background:#0f0e17;color:#fff;display:flex;flex-direction:column;min-height:100vh}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:#1a1a2e;border-bottom:1px solid #2d2d44}
+    .brand{display:flex;align-items:center;gap:10px}
+    .logo{width:32px;height:32px;background:#534AB7;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px}
+    .brand-name{font-size:15px;font-weight:600;color:#CECBF6}
+    .brand-sub{font-size:10px;color:#7F77DD}
+    .topbar-right{display:flex;align-items:center;gap:10px}
+    .live-pill{display:flex;align-items:center;gap:5px;padding:4px 10px;background:rgba(99,153,34,0.15);border:1px solid rgba(99,153,34,0.3);border-radius:20px;font-size:11px;color:#97C459}
+    .pulse{width:6px;height:6px;border-radius:50%;background:#639922;animation:beat 1.4s infinite}
+    @keyframes beat{0%,100%{transform:scale(1)}50%{transform:scale(1.5)}}
+    .icon-btn{width:30px;height:30px;border-radius:8px;border:1px solid #2d2d44;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#6b7280;font-size:15px;transition:all .2s}
+    .icon-btn:hover{background:#26215C;color:#CECBF6}
+    .avatar{width:30px;height:30px;border-radius:50%;background:#534AB7;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#CECBF6}
+    .layout{display:flex;flex:1}
+    .sidenav{width:50px;background:#1a1a2e;border-right:1px solid #2d2d44;display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:4px}
+    .snav{width:34px;height:34px;border-radius:8px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#6b7280;font-size:17px;transition:all .2s}
+    .snav:hover,.snav.active{background:#26215C;color:#CECBF6}
+    .snav-div{width:22px;height:1px;background:#2d2d44;margin:4px 0}
+    .main{flex:1;padding:16px;display:flex;flex-direction:column;gap:12px;overflow-y:auto}
+    .r4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    .r21{display:grid;grid-template-columns:2fr 1fr;gap:12px}
+    .r31{display:grid;grid-template-columns:3fr 2fr;gap:12px}
+    .metric{background:#1a1a2e;border-radius:12px;padding:14px;border:1px solid #2d2d44;transition:transform .2s;cursor:default}
+    .metric:hover{transform:translateY(-2px);border-color:#534AB7}
+    .metric-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+    .metric-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px}
+    .metric-delta{font-size:10px;padding:2px 6px;border-radius:10px}
+    .delta-up{background:rgba(99,153,34,0.15);color:#97C459}
+    .delta-dn{background:rgba(226,75,74,0.15);color:#F09595}
+    .metric-val{font-size:22px;font-weight:600;color:#fff}
+    .metric-lbl{font-size:11px;color:#6b7280;margin-top:2px}
+    .spark{display:flex;align-items:flex-end;gap:2px;height:20px;margin-top:8px}
+    .spark-bar{flex:1;border-radius:2px;background:#2d2d44;transition:height .5s ease}
+    .card{background:#1a1a2e;border:1px solid #2d2d44;border-radius:14px;padding:16px}
+    .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    .card-title{font-size:13px;font-weight:600;color:#CECBF6;display:flex;align-items:center;gap:7px}
+    .card-action{font-size:11px;color:#534AB7;background:none;border:none;cursor:pointer;font-family:'Segoe UI',sans-serif}
+    .scan-tabs{display:flex;gap:5px;margin-bottom:12px}
+    .stab{padding:6px 12px;border-radius:8px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid #2d2d44;background:transparent;color:#6b7280;transition:all .2s;display:flex;align-items:center;gap:4px;font-family:'Segoe UI',sans-serif}
+    .stab.active,.stab:hover{background:#26215C;border-color:#534AB7;color:#CECBF6}
+    .inp{width:100%;padding:8px 10px;font-size:12px;border:1px solid #2d2d44;border-radius:8px;background:#0f0e17;color:#fff;outline:none;transition:border .2s;font-family:'Segoe UI',sans-serif;margin-bottom:7px}
+    .inp:focus{border-color:#534AB7}
+    textarea.inp{resize:none;height:58px}
+    .scan-btn{width:100%;padding:9px;background:#534AB7;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'Segoe UI',sans-serif}
+    .scan-btn:hover{background:#3C3489}
+    .scan-btn.running{background:#7F77DD;cursor:not-allowed}
+    .pbar-wrap{height:2px;background:#2d2d44;border-radius:2px;margin-top:8px;overflow:hidden;display:none}
+    .pbar{height:100%;width:0%;background:#534AB7;border-radius:2px;transition:width .08s}
+    .result{display:none;margin-top:10px;animation:rise .3s ease}
+    @keyframes rise{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+    .rtag{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:600;margin-bottom:7px}
+    .rtag-h{background:rgba(226,75,74,0.15);color:#F09595;border:1px solid rgba(226,75,74,0.3)}
+    .rtag-m{background:rgba(186,117,23,0.15);color:#FAC775;border:1px solid rgba(186,117,23,0.3)}
+    .rtag-l{background:rgba(99,153,34,0.15);color:#97C459;border:1px solid rgba(99,153,34,0.3)}
+    .rfinding{display:flex;align-items:center;gap:6px;font-size:11px;color:#9ca3af;padding:4px 0;border-bottom:1px solid #2d2d44}
+    .rfinding:last-child{border:none}
+    .rbar-wrap{flex:1;height:4px;background:#2d2d44;border-radius:2px;overflow:hidden}
+    .rbar{height:100%;border-radius:2px;width:0%;transition:width 1s ease}
+    .feed-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #2d2d44;cursor:pointer;transition:padding .2s}
+    .feed-item:last-child{border:none}
+    .feed-item:hover{padding-left:4px}
+    .ficon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+    .fi-h{background:rgba(226,75,74,0.15);color:#F09595}
+    .fi-m{background:rgba(186,117,23,0.15);color:#FAC775}
+    .fi-l{background:rgba(99,153,34,0.15);color:#97C459}
+    .ftext{flex:1;min-width:0}
+    .furl{font-size:11px;font-weight:500;color:#CECBF6;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .ftime{font-size:10px;color:#4b5563}
+    .ftag{font-size:10px;padding:2px 7px;border-radius:10px;flex-shrink:0;font-weight:500}
+    .ftag-h{background:rgba(226,75,74,0.15);color:#F09595}
+    .ftag-m{background:rgba(186,117,23,0.15);color:#FAC775}
+    .ftag-l{background:rgba(99,153,34,0.15);color:#97C459}
+    .model-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #2d2d44;font-size:11px}
+    .model-row:last-child{border:none}
+    .model-name{color:#9ca3af;width:100px;flex-shrink:0}
+    .model-bar-wrap{flex:1;height:5px;background:#2d2d44;border-radius:3px;overflow:hidden}
+    .model-bar{height:100%;border-radius:3px;width:0%;transition:width 1.2s ease}
+    .model-pct{color:#CECBF6;font-weight:600;width:32px;text-align:right}
+    .hmap{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:8px}
+    .hcell{aspect-ratio:1;border-radius:3px;background:#2d2d44;transition:background .3s}
+    .logout-btn{padding:6px 12px;border:1px solid #2d2d44;border-radius:8px;background:transparent;color:#6b7280;font-size:11px;cursor:pointer;font-family:'Segoe UI',sans-serif;transition:all .2s}
+    .logout-btn:hover{background:#3C3489;color:#CECBF6;border-color:#534AB7}
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="logo"><i class="ti ti-shield-check"></i></div>
+    <div>
+      <div class="brand-name">PhishShield AI</div>
+      <div class="brand-sub">AI-Driven Cyber Threat Detection</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="live-pill"><div class="pulse"></div>Live monitoring</div>
+    <button class="icon-btn"><i class="ti ti-bell"></i></button>
+    <button class="icon-btn"><i class="ti ti-settings"></i></button>
+    <div class="avatar">{{ user[0].upper() if user else 'U' }}</div>
+    <a href="/logout"><button class="logout-btn"><i class="ti ti-logout"></i> Logout</button></a>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="sidenav">
+    <button class="snav active"><i class="ti ti-layout-dashboard"></i></button>
+    <button class="snav"><i class="ti ti-search"></i></button>
+    <button class="snav"><i class="ti ti-file-text"></i></button>
+    <div class="snav-div"></div>
+    <button class="snav"><i class="ti ti-history"></i></button>
+    <button class="snav"><i class="ti ti-chart-bar"></i></button>
+  </div>
+
+  <div class="main">
+
+    <div class="r4">
+      <div class="metric">
+        <div class="metric-top">
+          <div class="metric-icon" style="background:rgba(83,74,183,0.2);color:#AFA9EC"><i class="ti ti-link"></i></div>
+          <span class="metric-delta delta-up"><i class="ti ti-arrow-up" style="font-size:9px"></i>12%</span>
+        </div>
+        <div class="metric-val" id="mv1">0</div>
+        <div class="metric-lbl">URLs scanned</div>
+        <div class="spark" id="sp1"></div>
+      </div>
+      <div class="metric">
+        <div class="metric-top">
+          <div class="metric-icon" style="background:rgba(226,75,74,0.2);color:#F09595"><i class="ti ti-alert-triangle"></i></div>
+          <span class="metric-delta delta-dn"><i class="ti ti-arrow-up" style="font-size:9px"></i>8%</span>
+        </div>
+        <div class="metric-val" id="mv2">0</div>
+        <div class="metric-lbl">Threats detected</div>
+        <div class="spark" id="sp2"></div>
+      </div>
+      <div class="metric">
+        <div class="metric-top">
+          <div class="metric-icon" style="background:rgba(99,153,34,0.2);color:#97C459"><i class="ti ti-check"></i></div>
+          <span class="metric-delta delta-up"><i class="ti ti-arrow-up" style="font-size:9px"></i>2%</span>
+        </div>
+        <div class="metric-val" id="mv3">0%</div>
+        <div class="metric-lbl">Model accuracy</div>
+        <div class="spark" id="sp3"></div>
+      </div>
+      <div class="metric">
+        <div class="metric-top">
+          <div class="metric-icon" style="background:rgba(186,117,23,0.2);color:#FAC775"><i class="ti ti-copy"></i></div>
+          <span class="metric-delta delta-dn"><i class="ti ti-arrow-up" style="font-size:9px"></i>5%</span>
+        </div>
+        <div class="metric-val" id="mv4">0</div>
+        <div class="metric-lbl">Clone sites found</div>
+        <div class="spark" id="sp4"></div>
+      </div>
+    </div>
+
+    <div class="r21">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><i class="ti ti-radar" style="color:#534AB7"></i>Threat scanner</div>
+        </div>
+        <div class="scan-tabs">
+          <button class="stab active" onclick="switchScan('url',this)"><i class="ti ti-link" style="font-size:12px"></i>URL</button>
+          <button class="stab" onclick="switchScan('email',this)"><i class="ti ti-mail" style="font-size:12px"></i>Email</button>
+          <button class="stab" onclick="switchScan('clone',this)"><i class="ti ti-copy" style="font-size:12px"></i>Clone</button>
+        </div>
+
+        <div id="sp-url">
+          <input class="inp" id="url-in" placeholder="https://suspicious-site.com/login">
+          <button class="scan-btn" id="btn-url" onclick="doScan('url')"><i class="ti ti-search"></i>Analyze URL</button>
+        </div>
+        <div id="sp-email" style="display:none">
+          <input class="inp" id="em-sub" placeholder="Email subject...">
+          <textarea class="inp" id="em-body" placeholder="Paste email body here..."></textarea>
+          <button class="scan-btn" id="btn-email" onclick="doScan('email')"><i class="ti ti-search"></i>Analyze Email</button>
+        </div>
+        <div id="sp-clone" style="display:none">
+          <input class="inp" id="clone-in" placeholder="https://paypal-secure-update.xyz">
+          <button class="scan-btn" id="btn-clone" onclick="doScan('clone')"><i class="ti ti-search"></i>Check Clone</button>
+        </div>
+
+        <div class="pbar-wrap" id="pb"><div class="pbar" id="pf"></div></div>
+        <div class="result" id="result-box"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><i class="ti ti-chart-donut" style="color:#534AB7"></i>Threat breakdown</div>
+        </div>
+        <canvas id="donut" width="180" height="130"></canvas>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px">
+          <div style="display:flex;align-items:center;gap:7px;font-size:11px;color:#9ca3af"><div style="width:8px;height:8px;border-radius:50%;background:#E24B4A"></div>Phishing URLs<span style="margin-left:auto;color:#CECBF6;font-weight:600">47%</span></div>
+          <div style="display:flex;align-items:center;gap:7px;font-size:11px;color:#9ca3af"><div style="width:8px;height:8px;border-radius:50%;background:#BA7517"></div>Phishing emails<span style="margin-left:auto;color:#CECBF6;font-weight:600">31%</span></div>
+          <div style="display:flex;align-items:center;gap:7px;font-size:11px;color:#9ca3af"><div style="width:8px;height:8px;border-radius:50%;background:#534AB7"></div>Clone sites<span style="margin-left:auto;color:#CECBF6;font-weight:600">14%</span></div>
+          <div style="display:flex;align-items:center;gap:7px;font-size:11px;color:#9ca3af"><div style="width:8px;height:8px;border-radius:50%;background:#639922"></div>Safe<span style="margin-left:auto;color:#CECBF6;font-weight:600">8%</span></div>
+        </div>
+        <div style="margin-top:14px">
+          <div style="font-size:11px;color:#6b7280;margin-bottom:8px;display:flex;justify-content:space-between"><span>Model performance</span><span>Accuracy</span></div>
+          <div class="model-row"><span class="model-name">Random Forest</span><div class="model-bar-wrap"><div class="model-bar" id="mb1" style="background:#534AB7"></div></div><span class="model-pct">96%</span></div>
+          <div class="model-row"><span class="model-name">BERT NLP</span><div class="model-bar-wrap"><div class="model-bar" id="mb2" style="background:#1D9E75"></div></div><span class="model-pct">94%</span></div>
+          <div class="model-row"><span class="model-name">Clone detector</span><div class="model-bar-wrap"><div class="model-bar" id="mb3" style="background:#BA7517"></div></div><span class="model-pct">91%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="r31">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><i class="ti ti-activity" style="color:#534AB7"></i>Live threat feed</div>
+          <button class="card-action">View all</button>
+        </div>
+        <div id="feed">
+          <div class="feed-item"><div class="ficon fi-h"><i class="ti ti-alert-triangle"></i></div><div class="ftext"><div class="furl">http://paypal-secure-verify.xyz/login</div><div class="ftime">2 min ago · URL scan</div></div><span class="ftag ftag-h">High</span></div>
+          <div class="feed-item"><div class="ficon fi-l"><i class="ti ti-check"></i></div><div class="ftext"><div class="furl">https://www.google.com/accounts</div><div class="ftime">4 min ago · URL scan</div></div><span class="ftag ftag-l">Safe</span></div>
+          <div class="feed-item"><div class="ficon fi-m"><i class="ti ti-mail"></i></div><div class="ftext"><div class="furl">Urgent: Your bank account is suspended</div><div class="ftime">9 min ago · Email scan</div></div><span class="ftag ftag-m">Medium</span></div>
+          <div class="feed-item"><div class="ficon fi-h"><i class="ti ti-copy"></i></div><div class="ftext"><div class="furl">http://netflix-login-free.tk/signup</div><div class="ftime">15 min ago · Clone check</div></div><span class="ftag ftag-h">High</span></div>
+          <div class="feed-item"><div class="ficon fi-l"><i class="ti ti-check"></i></div><div class="ftext"><div class="furl">https://github.com/login</div><div class="ftime">21 min ago · URL scan</div></div><span class="ftag ftag-l">Safe</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><i class="ti ti-calendar" style="color:#534AB7"></i>Activity heatmap</div>
+        </div>
+        <div class="hmap" id="hmap"></div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#4b5563;margin-top:6px">
+          <span>Low</span>
+          <div style="width:9px;height:9px;border-radius:2px;background:#2d2d44"></div>
+          <div style="width:9px;height:9px;border-radius:2px;background:#3C3489"></div>
+          <div style="width:9px;height:9px;border-radius:2px;background:#534AB7"></div>
+          <div style="width:9px;height:9px;border-radius:2px;background:#BA7517"></div>
+          <div style="width:9px;height:9px;border-radius:2px;background:#E24B4A"></div>
+          <span>High</span>
+        </div>
+        <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div style="background:#0f0e17;border-radius:8px;padding:10px;text-align:center">
+            <div style="font-size:18px;font-weight:600;color:#F09595" id="td1">0</div>
+            <div style="font-size:10px;color:#6b7280">Blocked today</div>
+          </div>
+          <div style="background:#0f0e17;border-radius:8px;padding:10px;text-align:center">
+            <div style="font-size:18px;font-weight:600;color:#97C459" id="td2">0</div>
+            <div style="font-size:10px;color:#6b7280">Safe today</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function animCount(el,target,suffix,dur){
+  let s=0,step=target/60;
+  const iv=setInterval(()=>{
+    s=Math.min(s+step,target);
+    el.textContent=Math.round(s)+suffix;
+    if(Math.round(s)>=target)clearInterval(iv);
+  },dur/60);
+}
+setTimeout(()=>{
+  animCount(document.getElementById('mv1'),1284,'',1200);
+  animCount(document.getElementById('mv2'),347,'',1200);
+  animCount(document.getElementById('mv3'),96,'%',1000);
+  animCount(document.getElementById('mv4'),23,'',1200);
+  animCount(document.getElementById('td1'),48,'',1000);
+  animCount(document.getElementById('td2'),312,'',1000);
+},300);
+
+setTimeout(()=>{
+  document.getElementById('mb1').style.width='96%';
+  document.getElementById('mb2').style.width='94%';
+  document.getElementById('mb3').style.width='91%';
+},600);
+
+const sparkData=[[3,5,4,7,6,8,9],[8,6,9,7,10,8,12],[94,95,97,96,97,96,96],[2,4,3,5,4,6,5]];
+const sparkColors=['#534AB7','#E24B4A','#639922','#BA7517'];
+['sp1','sp2','sp3','sp4'].forEach((id,i)=>{
+  const el=document.getElementById(id);
+  const max=Math.max(...sparkData[i]);
+  sparkData[i].forEach((v,j)=>{
+    const b=document.createElement('div');
+    b.className='spark-bar';
+    b.style.background=sparkColors[i];
+    b.style.height='0px';
+    el.appendChild(b);
+    setTimeout(()=>{b.style.height=Math.round((v/max)*20)+'px';},400+j*60);
+  });
+});
+
+const hm=document.getElementById('hmap');
+const hcols=['#2d2d44','#3C3489','#534AB7','#BA7517','#E24B4A'];
+for(let i=0;i<49;i++){
+  const c=document.createElement('div');
+  c.className='hcell';
+  setTimeout(()=>{c.style.background=hcols[Math.floor(Math.random()*5)];},200+i*18);
+  hm.appendChild(c);
+}
+
+setTimeout(()=>{
+  const ctx=document.getElementById('donut').getContext('2d');
+  new Chart(ctx,{
+    type:'doughnut',
+    data:{datasets:[{data:[47,31,14,8],backgroundColor:['#E24B4A','#BA7517','#534AB7','#639922'],borderWidth:0,hoverOffset:4}]},
+    options:{cutout:'70%',plugins:{legend:{display:false}},animation:{duration:1000}}
+  });
+},500);
+
+function switchScan(type,btn){
+  document.querySelectorAll('.stab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  ['url','email','clone'].forEach(t=>{
+    document.getElementById('sp-'+t).style.display=t===type?'block':'none';
+  });
+  document.getElementById('result-box').style.display='none';
+  document.getElementById('pb').style.display='none';
+}
+
+async function doScan(type){
+  const btn=document.getElementById('btn-'+type);
+  const pb=document.getElementById('pb');
+  const pf=document.getElementById('pf');
+  const rb=document.getElementById('result-box');
+  btn.classList.add('running');
+  btn.innerHTML='<i class="ti ti-loader"></i> Scanning...';
+  pb.style.display='block';pf.style.width='0%';rb.style.display='none';
+  let w=0;
+  const iv=setInterval(()=>{w=Math.min(w+Math.random()*15,94);pf.style.width=w+'%';},100);
+
+  let body={};
+  let endpoint='';
+  if(type==='url'){
+    endpoint='/scan/url';
+    body={url:document.getElementById('url-in').value};
+  } else if(type==='email'){
+    endpoint='/scan/email';
+    body={subject:document.getElementById('em-sub').value,body:document.getElementById('em-body').value};
+  } else {
+    endpoint='/scan/clone';
+    body={url:document.getElementById('clone-in').value};
+  }
+
+  try{
+    const res=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const data=await res.json();
+    clearInterval(iv);pf.style.width='100%';
+    setTimeout(()=>{
+      pb.style.display='none';
+      btn.classList.remove('running');
+      btn.innerHTML='<i class="ti ti-search"></i> Scan again';
+      showResult(type,rb,data);
+    },300);
+  } catch(e){
+    clearInterval(iv);
+    btn.classList.remove('running');
+    btn.innerHTML='<i class="ti ti-search"></i> Analyze';
+    alert('Error: '+e.message);
+  }
+}
+
+function showResult(type,rb,data){
+  const lv=data.threat_level||'LOW';
+  const conf=data.confidence||0;
+  const tc=lv==='HIGH'?'rtag-h':lv==='MEDIUM'?'rtag-m':'rtag-l';
+  const bc=lv==='HIGH'?'#E24B4A':lv==='MEDIUM'?'#BA7517':'#639922';
+  const icon=lv==='HIGH'?'ti-alert-triangle':lv==='MEDIUM'?'ti-alert-circle':'ti-check';
+
+  let findings=[];
+  if(type==='url'){
+    findings=[
+      {l:'Phishing detected',p:conf},
+      {l:'Suspicious URL pattern',p:Math.min(conf+5,99)},
+      {l:'Domain analysis',p:Math.min(conf-5,99)}
+    ];
+  } else if(type==='email'){
+    findings=[
+      {l:'Urgency score: '+data.urgency_score,p:conf},
+      {l:'Threat keywords found',p:Math.min(conf+3,99)},
+      {l:'Suspicious links: '+(data.suspicious_links||[]).length,p:Math.min(conf-8,99)}
+    ];
+  } else {
+    findings=[
+      {l:'Clone pattern detected',p:conf},
+      {l:'Brand impersonation check',p:Math.min(conf+2,99)},
+      {l:'Domain mismatch',p:Math.min(conf-3,99)}
+    ];
+  }
+
+  rb.innerHTML='<span class="rtag '+tc+'"><i class="ti '+icon+'" style="font-size:11px"></i>'+lv+' RISK · '+conf+'% confidence</span>'
+    +findings.map(f=>'<div class="rfinding"><span style="flex:1;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+f.l+'</span><div class="rbar-wrap"><div class="rbar" data-w="'+Math.max(f.p,0)+'" style="background:'+bc+'"></div></div><span style="font-size:10px;color:#9ca3af;min-width:28px;text-align:right">'+Math.round(Math.max(f.p,0))+'%</span></div>').join('');
+  rb.style.display='block';
+  setTimeout(()=>{rb.querySelectorAll('.rbar').forEach(b=>{b.style.width=b.dataset.w+'%';});},100);
+
+  const inp=type==='email'?document.getElementById('em-sub'):document.getElementById(type==='url'?'url-in':'clone-in');
+  const feed=document.getElementById('feed');
+  const ic=lv==='HIGH'?'fi-h':lv==='MEDIUM'?'fi-m':'fi-l';
+  const ii=lv==='HIGH'?'ti-alert-triangle':lv==='MEDIUM'?'ti-alert-circle':'ti-check';
+  const fc=lv==='HIGH'?'ftag-h':lv==='MEDIUM'?'ftag-m':'ftag-l';
+  const label=lv==='HIGH'?'High':lv==='MEDIUM'?'Medium':'Safe';
+  const ni=document.createElement('div');
+  ni.className='feed-item';
+  ni.innerHTML='<div class="ficon '+ic+'"><i class="ti '+ii+'"></i></div><div class="ftext"><div class="furl">'+(inp.value||'New scan')+'</div><div class="ftime">Just now · '+type+' scan</div></div><span class="ftag '+fc+'">'+label+'</span>';
+  feed.insertBefore(ni,feed.firstChild);
+  if(feed.children.length>6)feed.removeChild(feed.lastChild);
+}
+</script>
+</body>
+</html>
